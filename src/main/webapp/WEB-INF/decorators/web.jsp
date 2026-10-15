@@ -13,9 +13,18 @@
     <nav class="navbar bg-white shadow-sm">
         <div class="container">
             <a class="navbar-brand fw-bold text-danger" href="/">OneShop</a>
-            <div class="d-flex gap-3">
+            <div class="d-flex align-items-center gap-3">
                 <a class="text-dark" href="/cart"><i class="bi bi-cart3"></i> Giỏ hàng</a>
-                <a class="text-dark" href="/login"><i class="bi bi-person"></i> Đăng nhập</a>
+                <% if (request.getUserPrincipal() != null) { %>
+                    <span class="text-dark">
+                        <i class="bi bi-person"></i> <%= request.getUserPrincipal().getName() %>
+                    </span>
+                    <form action="/logout" method="post" class="d-inline m-0">
+                        <button type="submit" class="btn btn-link p-0 text-dark">Đăng xuất</button>
+                    </form>
+                <% } else { %>
+                    <a class="text-dark" href="/login"><i class="bi bi-person"></i> Đăng nhập</a>
+                <% } %>
             </div>
         </div>
     </nav>

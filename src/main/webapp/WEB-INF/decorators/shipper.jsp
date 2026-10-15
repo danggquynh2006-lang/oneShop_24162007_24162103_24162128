@@ -11,12 +11,20 @@
 </head>
 <body>
     <div class="d-flex min-vh-100">
-        <aside class="bg-dark text-white p-3" style="width:240px">
+        <aside class="bg-dark text-white p-3 d-flex flex-column" style="width:240px">
             <h5 class="text-danger">OneShop Shipper</h5>
             <ul class="nav flex-column mt-3">
                 <li class="nav-item"><a class="nav-link text-white" href="/shipper/orders"><i class="bi bi-truck"></i> Đơn được giao</a></li>
                 <li class="nav-item"><a class="nav-link text-white" href="/shipper/statistics"><i class="bi bi-bar-chart"></i> Thống kê</a></li>
             </ul>
+            <div class="mt-auto pt-3 border-top border-secondary small">
+                <% if (request.getUserPrincipal() != null) { %>
+                    <div class="text-white-50 mb-2 text-truncate"><i class="bi bi-person-circle"></i> <%= request.getUserPrincipal().getName() %></div>
+                <% } %>
+                <form action="/logout" method="post" class="m-0">
+                    <button type="submit" class="btn btn-outline-light btn-sm w-100"><i class="bi bi-box-arrow-right"></i> Đăng xuất</button>
+                </form>
+            </div>
         </aside>
         <div class="flex-grow-1 p-4 bg-light">
             <sitemesh:write property="body"/>
