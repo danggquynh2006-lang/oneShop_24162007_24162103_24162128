@@ -19,6 +19,8 @@ public class AuthService {
     private final OtpService otpService;
     private final MailService mailService;
 
+    // ===== Đăng ký =====
+
     /** Đăng ký: lưu user (chưa kích hoạt) rồi gửi OTP. */
     public void register(RegisterRequest req) {
         String email = normalize(req.getEmail());
@@ -35,7 +37,7 @@ public class AuthService {
         user.setPassword(passwordEncoder.encode(req.getPassword()));
         userRepository.save(user);
 
-        sendOtp(email);
+        sendOtp(email, OtpType.REGISTER);
     }
 
     public void resendRegisterOtp(String email) {
@@ -44,7 +46,7 @@ public class AuthService {
         if (user == null || user.isEnabled()) {
             throw new AuthException("Không tìm thấy tài khoản cần kích hoạt.");
         }
-        sendOtp(email);
+        sendOtp(email, OtpType.REGISTER);
     }
 
     /** Nhập đúng OTP thì kích hoạt tài khoản. */
@@ -56,6 +58,8 @@ public class AuthService {
         user.setEnabled(true);
         userRepository.save(user);
     }
+
+    // ===== Đăng nhập =====
 
     /** Đăng nhập: kiểm tra email, mật khẩu, trạng thái tài khoản. */
     public User login(String email, String password) {
@@ -72,9 +76,36 @@ public class AuthService {
         return user;
     }
 
-    private void sendOtp(String email) {
-        OtpToken token = otpService.create(email, OtpType.REGISTER);
-        mailService.sendOtp(email, token.getCode(), OtpType.REGISTER);
+    // ===== Quên mật khẩu =====
+
+    /**
+     * Gửi OTP đặt lại mật khẩu. Nếu email không tồn tại hoặc chưa kích hoạt thì
+     * im lặng bỏ qua, để người ngoài không dò được email nào đã đăng ký.
+     */
+    public void requestPasswordReset(String email) {
+        email = normalize(email);
+        User user = userRepository.findByEmail(email).orElse(null);
+        if (user == null || !user.isEnabled()) {
+            return;
+        }
+        sendOtp(email, OtpType.FORGOT);
+    }
+
+    /** Nhập đúng OTP thì đổi sang mật khẩu mới (đã mã hóa BCrypt). */
+    public void resetPassword(ResetPasswordRequest req) {
+        String email = normalize(req.getEmail());
+        otpService.verify(email, OtpType.FORGOT, req.getCode().trim());
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new AuthException("Không tìm thấy tài khoản."));
+        user.setPassword(passwordEncoder.encode(req.getPassword()));
+        userRepository.save(user);
+    }
+
+    // ===== Tiện ích =====
+
+    private void sendOtp(String email, OtpType type) {
+        OtpToken token = otpService.create(email, type);
+        mailService.sendOtp(email, token.getCode(), type);
     }
 
     private String normalize(String email) {
