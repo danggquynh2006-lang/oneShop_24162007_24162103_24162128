@@ -57,6 +57,21 @@ public class AuthService {
         userRepository.save(user);
     }
 
+    /** Đăng nhập: kiểm tra email, mật khẩu, trạng thái tài khoản. */
+    public User login(String email, String password) {
+        User user = userRepository.findByEmail(normalize(email)).orElse(null);
+        if (user == null || !passwordEncoder.matches(password, user.getPassword())) {
+            throw new AuthException("Email hoặc mật khẩu không đúng.");
+        }
+        if (!user.isEnabled()) {
+            throw new AuthException("Tài khoản chưa được kích hoạt. Hãy đăng ký lại để nhận mã OTP mới.");
+        }
+        if (user.isLocked()) {
+            throw new AuthException("Tài khoản của bạn đã bị khóa. Vui lòng liên hệ quản trị viên.");
+        }
+        return user;
+    }
+
     private void sendOtp(String email) {
         OtpToken token = otpService.create(email, OtpType.REGISTER);
         mailService.sendOtp(email, token.getCode(), OtpType.REGISTER);
