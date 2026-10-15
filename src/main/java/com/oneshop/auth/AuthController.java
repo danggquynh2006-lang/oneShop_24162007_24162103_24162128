@@ -1,5 +1,9 @@
 package com.oneshop.auth;
 
+import java.time.Duration;
+
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseCookie;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -9,6 +13,11 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import com.oneshop.config.JwtAuthenticationFilter;
+import com.oneshop.config.JwtService;
+import com.oneshop.entity.User;
+
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
@@ -17,6 +26,9 @@ import lombok.RequiredArgsConstructor;
 public class AuthController {
 
     private final AuthService authService;
+    private final JwtService jwtService;
+
+    // ===== Đăng ký =====
 
     @GetMapping("/register")
     public String registerForm(Model model) {
@@ -43,6 +55,8 @@ public class AuthController {
         redirect.addAttribute("email", form.getEmail().trim().toLowerCase());
         return "redirect:/verify-otp";
     }
+
+    // ===== Xác thực OTP =====
 
     @GetMapping("/verify-otp")
     public String verifyForm(@RequestParam String email,
@@ -78,5 +92,44 @@ public class AuthController {
         redirect.addAttribute("email", email);
         redirect.addAttribute("resent", "1");
         return "redirect:/verify-otp";
+    }
+
+    // ===== Đăng nhập =====
+
+    @GetMapping("/login")
+    public String loginForm(@RequestParam(required = false) String registered,
+                            @RequestParam(required = false) String logout, Model model) {
+        if (SecurityUtil.getCurrentUser() != null) {
+            return "redirect:/";
+        }
+        if (registered != null) {
+            model.addAttribute("message", "Đăng ký thành công! Hãy đăng nhập.");
+        }
+        if (logout != null) {
+            model.addAttribute("message", "Bạn đã đăng xuất.");
+        }
+        return "auth/login";
+    }
+
+    @PostMapping("/login")
+    public String login(@RequestParam String email, @RequestParam String password,
+                        Model model, HttpServletResponse response) {
+        try {
+            User user = authService.login(email, password);
+            ResponseCookie cookie = ResponseCookie
+                    .from(JwtAuthenticationFilter.COOKIE_NAME, jwtService.generate(user))
+                    .httpOnly(true)
+                    .secure(false) // chạy http://localhost; khi deploy https thì đổi thành true
+                    .sameSite("Lax")
+                    .path("/")
+                    .maxAge(Duration.ofSeconds(jwtService.getExpirationSeconds()))
+                    .build();
+            response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+            return "redirect:/";
+        } catch (AuthException e) {
+            model.addAttribute("error", e.getMessage());
+            model.addAttribute("email", email);
+            return "auth/login";
+        }
     }
 }
