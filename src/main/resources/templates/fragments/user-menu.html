@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<div th:fragment="menu(active)" class="list-group mb-3">
+    <a th:href="@{/user/profile}" class="list-group-item list-group-item-action"
+       th:classappend="${active == 'profile'} ? 'active'">
+        <i class="bi bi-person"></i> Tài khoản của tôi
+    </a>
+    <a th:href="@{/user/addresses}" class="list-group-item list-group-item-action"
+       th:classappend="${active == 'addresses'} ? 'active'">
+        <i class="bi bi-geo-alt"></i> Địa chỉ nhận hàng
+    </a>
+</div>
+</body>
+</html>

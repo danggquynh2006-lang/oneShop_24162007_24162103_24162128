@@ -16,9 +16,9 @@
             <div class="d-flex align-items-center gap-3">
                 <a class="text-dark" href="/cart"><i class="bi bi-cart3"></i> Giỏ hàng</a>
                 <% if (request.getUserPrincipal() != null) { %>
-                    <span class="text-dark">
-                        <i class="bi bi-person"></i> <%= request.getUserPrincipal().getName() %>
-                    </span>
+                    <a class="text-dark" href="/user/profile">
+					    <i class="bi bi-person"></i> <%= request.getUserPrincipal().getName() %>
+					</a>
                     <form action="/logout" method="post" class="d-inline m-0">
                         <button type="submit" class="btn btn-link p-0 text-dark">Đăng xuất</button>
                     </form>
