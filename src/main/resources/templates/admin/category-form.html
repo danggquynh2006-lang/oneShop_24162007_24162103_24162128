@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Danh mục</title>
+</head>
+<body>
+<div class="row justify-content-center">
+    <div class="col-lg-7">
+        <div class="card shadow-sm">
+            <div class="card-body p-4">
+                <h4 class="mb-3" th:text="${formTitle}"></h4>
+                <div class="alert alert-danger" th:if="${formError}" th:text="${formError}"></div>
+
+                <form th:action="@{${formAction}}" th:object="${form}" method="post"
+                      enctype="multipart/form-data" novalidate>
+                    <div class="mb-3">
+                        <label class="form-label">Tên danh mục</label>
+                        <input type="text" class="form-control" th:field="*{name}"
+                               th:classappend="${#fields.hasErrors('name')} ? 'is-invalid'">
+                        <div class="invalid-feedback" th:errors="*{name}"></div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Danh mục cha</label>
+                        <select class="form-select" th:field="*{parentId}" th:disabled="${hasChildren}">
+                            <option value="">-- Là danh mục gốc --</option>
+                            <option th:each="p : ${parents}" th:value="${p.id}" th:text="${p.name}"></option>
+                        </select>
+                        <div class="form-text" th:if="${hasChildren}">
+                            Danh mục này đang có danh mục con nên không thể chuyển thành danh mục con.
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Ảnh danh mục</label>
+                        <div class="mb-2" th:if="${current != null and current.image != null}">
+                            <img th:src="${current.image}" alt="Ảnh hiện tại" class="rounded border"
+                                 style="width:90px;height:90px;object-fit:cover">
+                        </div>
+                        <input type="file" name="imageFile" class="form-control"
+                               accept="image/jpeg,image/png,image/webp">
+                        <div class="form-text">JPG, PNG hoặc WEBP, tối đa 2MB. Để trống nếu không muốn đổi ảnh.</div>
+                    </div>
+
+                    <div class="form-check mb-3">
+                        <input type="checkbox" class="form-check-input" id="active" th:field="*{active}">
+                        <label class="form-check-label" for="active">Hiển thị trên website</label>
+                    </div>
+
+                    <button type="submit" class="btn btn-danger">Lưu danh mục</button>
+                    <a th:href="@{/admin/categories}" class="btn btn-outline-secondary">Hủy</a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
