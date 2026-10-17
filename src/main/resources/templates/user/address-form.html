@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Địa chỉ nhận hàng</title>
+</head>
+<body>
+<div class="row">
+    <div class="col-md-3" th:replace="~{fragments/user-menu :: menu('addresses')}"></div>
+
+    <div class="col-md-9">
+        <div class="card shadow-sm">
+            <div class="card-body p-4">
+                <h4 class="mb-3" th:text="${formTitle}"></h4>
+
+                <form th:action="@{${formAction}}" th:object="${form}" method="post" novalidate>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Tên người nhận</label>
+                            <input type="text" class="form-control" th:field="*{receiverName}"
+                                   th:classappend="${#fields.hasErrors('receiverName')} ? 'is-invalid'">
+                            <div class="invalid-feedback" th:errors="*{receiverName}"></div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Số điện thoại</label>
+                            <input type="text" class="form-control" th:field="*{phone}"
+                                   th:classappend="${#fields.hasErrors('phone')} ? 'is-invalid'">
+                            <div class="invalid-feedback" th:errors="*{phone}"></div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Tỉnh/Thành phố</label>
+                            <input type="text" class="form-control" th:field="*{province}"
+                                   th:classappend="${#fields.hasErrors('province')} ? 'is-invalid'">
+                            <div class="invalid-feedback" th:errors="*{province}"></div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Phường/Xã</label>
+                            <input type="text" class="form-control" th:field="*{ward}"
+                                   th:classappend="${#fields.hasErrors('ward')} ? 'is-invalid'">
+                            <div class="invalid-feedback" th:errors="*{ward}"></div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Địa chỉ cụ thể (số nhà, tên đường)</label>
+                        <input type="text" class="form-control" th:field="*{detail}"
+                               th:classappend="${#fields.hasErrors('detail')} ? 'is-invalid'">
+                        <div class="invalid-feedback" th:errors="*{detail}"></div>
+                    </div>
+                    <div class="form-check mb-3">
+                        <input type="checkbox" class="form-check-input" id="defaultAddress" th:field="*{defaultAddress}">
+                        <label class="form-check-label" for="defaultAddress">Đặt làm địa chỉ mặc định</label>
+                    </div>
+                    <button type="submit" class="btn btn-danger">Lưu địa chỉ</button>
+                    <a th:href="@{/user/addresses}" class="btn btn-outline-secondary">Hủy</a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

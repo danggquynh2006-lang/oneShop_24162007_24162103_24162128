@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Quản lý người dùng</title>
+</head>
+<body>
+<h3 class="mb-3">Quản lý người dùng</h3>
+
+<div class="alert alert-success" th:if="${message}" th:text="${message}"></div>
+<div class="alert alert-danger" th:if="${error}" th:text="${error}"></div>
+
+<form th:action="@{/admin/users}" method="get" class="row g-2 mb-3">
+    <div class="col-md-5">
+        <input type="text" name="keyword" class="form-control"
+               placeholder="Tìm theo email, họ tên hoặc số điện thoại" th:value="${keyword}">
+    </div>
+    <div class="col-md-3">
+        <select name="role" class="form-select">
+            <option value="">Tất cả vai trò</option>
+            <option th:each="r : ${roles}" th:value="${r}" th:text="${r}"
+                    th:selected="${r.name() == roleFilter}"></option>
+        </select>
+    </div>
+    <div class="col-md-2">
+        <select name="status" class="form-select">
+            <option value="" th:selected="${status == ''}">Mọi trạng thái</option>
+            <option value="active" th:selected="${status == 'active'}">Đang hoạt động</option>
+            <option value="pending" th:selected="${status == 'pending'}">Chưa kích hoạt</option>
+            <option value="locked" th:selected="${status == 'locked'}">Đã khóa</option>
+        </select>
+    </div>
+    <div class="col-md-2">
+        <button type="submit" class="btn btn-danger w-100"><i class="bi bi-search"></i> Tìm</button>
+    </div>
+</form>
+
+<p class="text-muted">Tìm thấy <strong th:text="${users.totalElements}"></strong> người dùng.</p>
+
+<div class="table-responsive">
+    <table class="table table-hover align-middle bg-white">
+        <thead class="table-light">
+        <tr>
+            <th>ID</th>
+            <th>Email</th>
+            <th>Họ tên</th>
+            <th>SĐT</th>
+            <th>Vai trò</th>
+            <th>Trạng thái</th>
+            <th>Ngày tạo</th>
+            <th class="text-end">Thao tác</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:if="${users.empty}">
+            <td colspan="8" class="text-center text-muted py-4">Không tìm thấy người dùng nào.</td>
+        </tr>
+        <tr th:each="u : ${users.content}"
+            th:with="canModify=${u.id != currentUserId and !(currentRole == 'MANAGER' and u.role.name() == 'ADMIN')}">
+            <td th:text="${u.id}"></td>
+            <td th:text="${u.email}"></td>
+            <td th:text="${u.fullName}"></td>
+            <td th:text="${u.phone}"></td>
+            <td><span class="badge bg-secondary" th:text="${u.role}"></span></td>
+            <td>
+                <span class="badge bg-danger" th:if="${u.locked}">Đã khóa</span>
+                <span class="badge bg-warning text-dark" th:if="${!u.locked and !u.enabled}">Chưa kích hoạt</span>
+                <span class="badge bg-success" th:if="${!u.locked and u.enabled}">Hoạt động</span>
+            </td>
+            <td th:text="${#temporals.format(u.createdAt, 'dd/MM/yyyy HH:mm')}"></td>
+            <td class="text-end">
+                <div th:if="${canModify}" class="d-flex gap-2 justify-content-end">
+                    <form th:action="@{/admin/users/{id}/role(id=${u.id})}" method="post" class="d-flex gap-1">
+                        <input type="hidden" name="keyword" th:value="${keyword}">
+                        <input type="hidden" name="role" th:value="${roleFilter}">
+                        <input type="hidden" name="status" th:value="${status}">
+                        <input type="hidden" name="page" th:value="${users.number}">
+                        <select name="newRole" class="form-select form-select-sm">
+                            <option th:each="r : ${assignableRoles}" th:value="${r}" th:text="${r}"
+                                    th:selected="${r == u.role}"></option>
+                        </select>
+                        <button type="submit" class="btn btn-sm btn-outline-secondary">Đổi</button>
+                    </form>
+
+                    <form th:if="${!u.locked}" th:action="@{/admin/users/{id}/lock(id=${u.id})}" method="post"
+                          onsubmit="return confirm('Khóa tài khoản này?')">
+                        <input type="hidden" name="keyword" th:value="${keyword}">
+                        <input type="hidden" name="role" th:value="${roleFilter}">
+                        <input type="hidden" name="status" th:value="${status}">
+                        <input type="hidden" name="page" th:value="${users.number}">
+                        <button type="submit" class="btn btn-sm btn-outline-danger">Khóa</button>
+                    </form>
+                    <form th:if="${u.locked}" th:action="@{/admin/users/{id}/unlock(id=${u.id})}" method="post">
+                        <input type="hidden" name="keyword" th:value="${keyword}">
+                        <input type="hidden" name="role" th:value="${roleFilter}">
+                        <input type="hidden" name="status" th:value="${status}">
+                        <input type="hidden" name="page" th:value="${users.number}">
+                        <button type="submit" class="btn btn-sm btn-outline-success">Mở khóa</button>
+                    </form>
+                </div>
+                <span th:unless="${canModify}" class="text-muted small">Không có quyền</span>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+
+<nav th:if="${users.totalPages > 1}">
+    <ul class="pagination">
+        <li class="page-item" th:classappend="${users.first} ? 'disabled'">
+            <a class="page-link"
+               th:href="@{/admin/users(keyword=${keyword},role=${roleFilter},status=${status},page=${users.number - 1})}">Trước</a>
+        </li>
+        <li class="page-item" th:each="p : ${#numbers.sequence(0, users.totalPages - 1)}"
+            th:classappend="${p == users.number} ? 'active'">
+            <a class="page-link" th:text="${p + 1}"
+               th:href="@{/admin/users(keyword=${keyword},role=${roleFilter},status=${status},page=${p})}"></a>
+        </li>
+        <li class="page-item" th:classappend="${users.last} ? 'disabled'">
+            <a class="page-link"
+               th:href="@{/admin/users(keyword=${keyword},role=${roleFilter},status=${status},page=${users.number + 1})}">Sau</a>
+        </li>
+    </ul>
+</nav>
+</body>
+</html>
