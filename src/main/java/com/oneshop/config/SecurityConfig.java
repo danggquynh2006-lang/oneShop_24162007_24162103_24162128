@@ -37,7 +37,7 @@ public class SecurityConfig {
                 .requestMatchers("/admin/**", "/manager/**").hasAnyRole("ADMIN", "MANAGER")
                 .requestMatchers("/vendor/**").hasRole("VENDOR")
                 .requestMatchers("/shipper/**").hasRole("SHIPPER")
-                .requestMatchers("/user/**", "/api/me").authenticated()
+                .requestMatchers("/user/**", "/cart/**", "/api/me").authenticated()
                 .anyRequest().permitAll())
             // Chưa đăng nhập mà vào trang cần quyền: chuyển tới /login. Thiếu quyền: trả 403.
             .exceptionHandling(ex -> ex
