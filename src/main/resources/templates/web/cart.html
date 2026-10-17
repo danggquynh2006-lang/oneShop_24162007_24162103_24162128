@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Giỏ hàng - OneShop</title>
+</head>
+<body>
+    <div class="container my-4">
+        <h3 class="mb-4">Giỏ hàng của bạn</h3>
+
+        <div class="card mb-4" th:each="g : ${groups}">
+            <div class="card-header fw-bold" th:text="${g.shopName}"></div>
+            <div class="card-body">
+                <div class="row align-items-center mb-3 cart-line" th:each="l : ${g.lines}"
+                     th:attr="data-price=${l.price}">
+                    <div class="col-1">
+                        <input type="checkbox" class="form-check-input line-check" checked>
+                    </div>
+                    <div class="col-4" th:text="${l.name}"></div>
+                    <div class="col-2 text-danger fw-bold"
+                         th:text="${#numbers.formatInteger(l.price, 0, 'POINT')} + ' đ'"></div>
+                    <div class="col-2">
+                        <input type="number" class="form-control form-control-sm line-qty"
+                               th:value="${l.quantity}" min="1">
+                    </div>
+                    <div class="col-2 fw-bold line-total"></div>
+                    <div class="col-1 text-end">
+                        <button class="btn btn-sm btn-outline-secondary" type="button">Xóa</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="d-flex justify-content-between align-items-center">
+            <div class="fs-5">Tổng tiền: <span id="grand-total" class="text-danger fw-bold">0 đ</span></div>
+            <a href="#" class="btn btn-danger">Thanh toán</a>
+        </div>
+    </div>
+
+    <script>
+        function fmt(n) { return n.toLocaleString('vi-VN') + ' đ'; }
+
+        function recalc() {
+            let grand = 0;
+            document.querySelectorAll('.cart-line').forEach(function (row) {
+                const price = parseInt(row.dataset.price, 10);
+                const qty = Math.max(1, parseInt(row.querySelector('.line-qty').value, 10) || 1);
+                const lineTotal = price * qty;
+                row.querySelector('.line-total').textContent = fmt(lineTotal);
+                if (row.querySelector('.line-check').checked) grand += lineTotal;
+            });
+            document.getElementById('grand-total').textContent = fmt(grand);
+        }
+
+        document.querySelectorAll('.line-qty, .line-check').forEach(function (el) {
+            el.addEventListener('input', recalc);
+            el.addEventListener('change', recalc);
+        });
+        recalc();
+    </script>
+</body>
+</html>
