@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import com.oneshop.common.Role;
 import com.oneshop.config.JwtAuthenticationFilter;
 import com.oneshop.config.JwtService;
 import com.oneshop.entity.User;
@@ -100,8 +101,9 @@ public class AuthController {
     public String loginForm(@RequestParam(required = false) String registered,
                             @RequestParam(required = false) String logout,
                             @RequestParam(required = false) String reset, Model model) {
-        if (SecurityUtil.getCurrentUser() != null) {
-            return "redirect:/";
+        User current = SecurityUtil.getCurrentUser();
+        if (current != null) {
+            return "redirect:" + homeFor(current.getRole());
         }
         if (registered != null) {
             model.addAttribute("message", "Đăng ký thành công! Hãy đăng nhập.");
@@ -129,7 +131,7 @@ public class AuthController {
                     .maxAge(Duration.ofSeconds(jwtService.getExpirationSeconds()))
                     .build();
             response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
-            return "redirect:/";
+            return "redirect:" + homeFor(user.getRole());
         } catch (AuthException e) {
             model.addAttribute("error", e.getMessage());
             model.addAttribute("email", email);
@@ -206,5 +208,15 @@ public class AuthController {
         redirect.addAttribute("email", email);
         redirect.addAttribute("resent", "1");
         return "redirect:/reset-password";
+    }
+
+    // ===== Tiện ích =====
+
+    /** Trang đích sau khi đăng nhập theo vai trò (Vendor, Shipper sẽ bổ sung khi có trang). */
+    private String homeFor(Role role) {
+        return switch (role) {
+            case ADMIN, MANAGER -> "/admin/users";
+            default -> "/";
+        };
     }
 }
