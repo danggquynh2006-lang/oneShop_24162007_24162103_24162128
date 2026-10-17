@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Nhà vận chuyển</title>
+</head>
+<body>
+<div class="row justify-content-center">
+    <div class="col-lg-6">
+        <div class="card shadow-sm">
+            <div class="card-body p-4">
+                <h4 class="mb-3" th:text="${formTitle}"></h4>
+                <div class="alert alert-danger" th:if="${formError}" th:text="${formError}"></div>
+
+                <form th:action="@{${formAction}}" th:object="${form}" method="post" novalidate>
+                    <div class="mb-3">
+                        <label class="form-label">Tên nhà vận chuyển</label>
+                        <input type="text" class="form-control" th:field="*{name}"
+                               th:classappend="${#fields.hasErrors('name')} ? 'is-invalid'">
+                        <div class="invalid-feedback" th:errors="*{name}"></div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Phí vận chuyển (VND)</label>
+                        <div class="input-group has-validation">
+                            <input type="number" min="0" step="1000" class="form-control" th:field="*{shippingFee}"
+                                   th:classappend="${#fields.hasErrors('shippingFee')} ? 'is-invalid'">
+                            <span class="input-group-text">đ</span>
+                            <div class="invalid-feedback" th:errors="*{shippingFee}"></div>
+                        </div>
+                        <div class="form-text">Phí áp dụng cho đơn mới, đơn đã đặt vẫn giữ phí cũ.</div>
+                    </div>
+
+                    <div class="form-check mb-3">
+                        <input type="checkbox" class="form-check-input" id="active" th:field="*{active}">
+                        <label class="form-check-label" for="active">Đang hoạt động (khách được chọn khi thanh toán)</label>
+                    </div>
+
+                    <button type="submit" class="btn btn-danger">Lưu</button>
+                    <a th:href="@{/admin/carriers}" class="btn btn-outline-secondary">Hủy</a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
