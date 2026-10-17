@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Sản phẩm đã xem - OneShop</title>
+</head>
+<body>
+    <div class="container my-4">
+        <h3 class="mb-4">Sản phẩm đã xem gần đây</h3>
+
+        <div th:if="${items.isEmpty()}" class="alert alert-info">
+            Bạn chưa xem sản phẩm nào.
+        </div>
+
+        <div class="list-group">
+            <a class="list-group-item list-group-item-action d-flex justify-content-between align-items-center"
+               th:each="p : ${items}" th:href="@{/product/{id}(id=${p.id})}">
+                <div>
+                    <div class="fw-bold" th:text="${p.name}"></div>
+                    <small class="text-muted" th:text="${p.note}"></small>
+                </div>
+                <span class="text-danger fw-bold"
+                      th:text="${#numbers.formatInteger(p.price, 0, 'POINT')} + ' đ'"></span>
+            </a>
+        </div>
+    </div>
+</body>
+</html>

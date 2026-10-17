@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Sản phẩm yêu thích - OneShop</title>
+</head>
+<body>
+    <div class="container my-4">
+        <h3 class="mb-4">Sản phẩm yêu thích</h3>
+
+        <div th:if="${items.isEmpty()}" class="alert alert-info">
+            Bạn chưa có sản phẩm yêu thích nào.
+        </div>
+
+        <div class="row">
+            <div class="col-6 col-md-3 mb-4" th:each="p : ${items}">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h6 class="card-title">
+                            <a th:href="@{/product/{id}(id=${p.id})}" class="text-decoration-none"
+                               th:text="${p.name}"></a>
+                        </h6>
+                        <div class="text-danger fw-bold"
+                             th:text="${#numbers.formatInteger(p.price, 0, 'POINT')} + ' đ'"></div>
+                        <small class="text-muted" th:text="${p.note}"></small>
+                    </div>
+                    <div class="card-footer text-end">
+                        <button class="btn btn-sm btn-outline-secondary" type="button">Bỏ yêu thích</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
