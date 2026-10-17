@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Tìm kiếm - OneShop</title>
+</head>
+<body>
+    <div class="container my-4">
+        <h3 class="mb-3">Tìm kiếm sản phẩm</h3>
+
+        <form method="get" th:action="@{/search}" class="card card-body mb-4">
+            <div class="row g-2">
+                <div class="col-md-4">
+                    <input type="text" name="keyword" class="form-control"
+                           placeholder="Tên sản phẩm" th:value="${keyword}">
+                </div>
+                <div class="col-md-3">
+                    <select name="categoryId" class="form-select">
+                        <option value="">Tất cả danh mục</option>
+                        <optgroup th:each="c : ${categories}" th:label="${c.name}">
+                            <option th:value="${c.id}" th:selected="${categoryId == c.id}"
+                                    th:text="'Tất cả ' + ${c.name}"></option>
+                            <option th:each="s : ${c.children}" th:value="${s.id}"
+                                    th:selected="${categoryId == s.id}" th:text="${s.name}"></option>
+                        </optgroup>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <input type="number" name="minPrice" class="form-control" placeholder="Giá từ"
+                           min="0" th:value="${minPrice}">
+                </div>
+                <div class="col-md-2">
+                    <input type="number" name="maxPrice" class="form-control" placeholder="Giá đến"
+                           min="0" th:value="${maxPrice}">
+                </div>
+                <div class="col-md-3">
+                    <select name="sort" class="form-select">
+                        <option value="sold" th:selected="${sort == 'sold'}">Bán chạy nhất</option>
+                        <option value="price_asc" th:selected="${sort == 'price_asc'}">Giá tăng dần</option>
+                        <option value="price_desc" th:selected="${sort == 'price_desc'}">Giá giảm dần</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-danger w-100">Tìm</button>
+                </div>
+            </div>
+        </form>
+
+        <p class="text-muted">Có <strong th:text="${results.size()}"></strong> kết quả.</p>
+        <div th:if="${results.isEmpty()}" class="alert alert-info">
+            Không tìm thấy sản phẩm phù hợp.
+        </div>
+
+        <div class="row">
+            <div class="col-6 col-md-3 mb-4" th:each="p : ${results}">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h6 class="card-title">
+                            <a th:href="@{/product/{id}(id=${p.id})}" class="stretched-link text-decoration-none"
+                               th:text="${p.name}"></a>
+                        </h6>
+                        <div class="text-danger fw-bold"
+                             th:text="${#numbers.formatInteger(p.price, 0, 'POINT')} + ' đ'"></div>
+                        <small class="text-muted" th:text="'Đã bán ' + ${p.sold}"></small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
