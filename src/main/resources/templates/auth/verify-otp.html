@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Xác thực OTP</title>
+</head>
+<body>
+<div class="row justify-content-center">
+    <div class="col-md-6 col-lg-4">
+        <div class="card shadow-sm">
+            <div class="card-body p-4">
+                <h3 class="text-center mb-2">Nhập mã OTP</h3>
+                <p class="text-center text-muted">
+                    Mã gồm 6 số đã được gửi tới <strong th:text="${email}"></strong>
+                </p>
+                <div class="alert alert-success" th:if="${message}" th:text="${message}"></div>
+                <div class="alert alert-danger" th:if="${error}" th:text="${error}"></div>
+
+                <form th:action="@{/verify-otp}" method="post">
+                    <input type="hidden" name="email" th:value="${email}">
+                    <div class="mb-3">
+                        <input type="text" name="code" class="form-control form-control-lg text-center"
+                               maxlength="6" pattern="\d{6}" inputmode="numeric" placeholder="______" required>
+                    </div>
+                    <button type="submit" class="btn btn-danger w-100">Xác nhận</button>
+                </form>
+
+                <form th:action="@{/verify-otp/resend}" method="post" class="text-center mt-3">
+                    <input type="hidden" name="email" th:value="${email}">
+                    <button type="submit" class="btn btn-link">Gửi lại mã</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

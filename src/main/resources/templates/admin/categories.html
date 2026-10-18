@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Quản lý danh mục</title>
+</head>
+<body>
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h3 class="mb-0">Quản lý danh mục</h3>
+    <a th:href="@{/admin/categories/new}" class="btn btn-danger"><i class="bi bi-plus-lg"></i> Thêm danh mục</a>
+</div>
+
+<div class="alert alert-success" th:if="${message}" th:text="${message}"></div>
+<div class="alert alert-danger" th:if="${error}" th:text="${error}"></div>
+
+<form th:action="@{/admin/categories}" method="get" class="row g-2 mb-3">
+    <div class="col-md-10">
+        <input type="text" name="keyword" class="form-control" placeholder="Tìm theo tên danh mục"
+               th:value="${keyword}">
+    </div>
+    <div class="col-md-2">
+        <button type="submit" class="btn btn-danger w-100"><i class="bi bi-search"></i> Tìm</button>
+    </div>
+</form>
+
+<p class="text-muted">Có <strong th:text="${categories.totalElements}"></strong> danh mục.</p>
+
+<div class="table-responsive">
+    <table class="table table-hover align-middle bg-white">
+        <thead class="table-light">
+        <tr>
+            <th>ID</th>
+            <th>Ảnh</th>
+            <th>Tên danh mục</th>
+            <th>Danh mục cha</th>
+            <th>Trạng thái</th>
+            <th class="text-end">Thao tác</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:if="${categories.empty}">
+            <td colspan="6" class="text-center text-muted py-4">Không có danh mục nào.</td>
+        </tr>
+        <tr th:each="c : ${categories.content}">
+            <td th:text="${c.id}"></td>
+            <td>
+                <img th:if="${c.image}" th:src="${c.image}" alt="Ảnh danh mục"
+                     class="rounded border" style="width:44px;height:44px;object-fit:cover">
+                <i th:unless="${c.image}" class="bi bi-image text-secondary fs-3"></i>
+            </td>
+            <td>
+                <strong th:if="${c.parent == null}" th:text="${c.name}"></strong>
+                <span th:if="${c.parent != null}" th:text="${c.name}"></span>
+            </td>
+            <td th:text="${c.parent != null} ? ${c.parent.name} : '—'"></td>
+            <td>
+                <span class="badge bg-success" th:if="${c.active}">Hiển thị</span>
+                <span class="badge bg-secondary" th:unless="${c.active}">Đang ẩn</span>
+            </td>
+            <td class="text-end">
+                <div class="d-flex gap-2 justify-content-end">
+                    <a th:href="@{/admin/categories/{id}/edit(id=${c.id})}"
+                       class="btn btn-sm btn-outline-secondary">Sửa</a>
+
+                    <form th:action="@{/admin/categories/{id}/toggle(id=${c.id})}" method="post">
+                        <input type="hidden" name="keyword" th:value="${keyword}">
+                        <input type="hidden" name="page" th:value="${categories.number}">
+                        <button type="submit" class="btn btn-sm btn-outline-warning"
+                                th:text="${c.active} ? 'Ẩn' : 'Hiện'"></button>
+                    </form>
+
+                    <form th:action="@{/admin/categories/{id}/delete(id=${c.id})}" method="post"
+                          onsubmit="return confirm('Xóa danh mục này?')">
+                        <input type="hidden" name="keyword" th:value="${keyword}">
+                        <input type="hidden" name="page" th:value="${categories.number}">
+                        <button type="submit" class="btn btn-sm btn-outline-danger">Xóa</button>
+                    </form>
+                </div>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+
+<nav th:if="${categories.totalPages > 1}">
+    <ul class="pagination">
+        <li class="page-item" th:classappend="${categories.first} ? 'disabled'">
+            <a class="page-link"
+               th:href="@{/admin/categories(keyword=${keyword},page=${categories.number - 1})}">Trước</a>
+        </li>
+        <li class="page-item" th:each="p : ${#numbers.sequence(0, categories.totalPages - 1)}"
+            th:classappend="${p == categories.number} ? 'active'">
+            <a class="page-link" th:text="${p + 1}"
+               th:href="@{/admin/categories(keyword=${keyword},page=${p})}"></a>
+        </li>
+        <li class="page-item" th:classappend="${categories.last} ? 'disabled'">
+            <a class="page-link"
+               th:href="@{/admin/categories(keyword=${keyword},page=${categories.number + 1})}">Sau</a>
+        </li>
+    </ul>
+</nav>
+</body>
+</html>
