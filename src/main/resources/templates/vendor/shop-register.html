@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"><head><title>Đăng ký shop</title></head><body>
+<main class="container py-5" style="max-width:700px">
+    <h2>Đăng ký mở shop</h2>
+    <p class="text-muted">Thông tin sẽ được quản trị viên duyệt trước khi shop hoạt động.</p>
+    <div class="alert alert-danger" th:if="${error}" th:text="${error}"></div>
+    <form th:action="@{/shop/register}" th:object="${form}" method="post" enctype="multipart/form-data">
+        <div class="mb-3"><label class="form-label">Tên shop</label><input class="form-control" th:field="*{name}" required><div class="text-danger" th:errors="*{name}"></div></div>
+        <div class="mb-3"><label class="form-label">Mô tả</label><textarea class="form-control" th:field="*{description}" rows="4"></textarea></div>
+        <div class="mb-3"><label class="form-label">Địa chỉ</label><input class="form-control" th:field="*{address}" required><div class="text-danger" th:errors="*{address}"></div></div>
+        <div class="mb-3"><label class="form-label">Logo</label><input class="form-control" type="file" name="logo" accept="image/*"></div>
+        <button class="btn btn-danger">Gửi đăng ký</button>
+    </form>
+</main></body></html>

@@ -1,0 +1,7 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"><head><title>Duyệt shop</title></head><body>
+<div class="container py-4"><h2>Shop chờ duyệt</h2>
+<table class="table table-striped"><thead><tr><th>Shop</th><th>Chủ shop</th><th>Địa chỉ</th><th></th></tr></thead>
+<tbody><tr th:each="shop : ${shops.content}"><td th:text="${shop.name}"></td><td th:text="${shop.owner.email}"></td><td th:text="${shop.address}"></td>
+<td><form th:action="@{/admin/shops/{id}/approve(id=${shop.id})}" method="post"><button class="btn btn-sm btn-success">Duyệt</button></form></td></tr></tbody></table>
+<p th:if="${shops.empty}">Không có shop chờ duyệt.</p></div></body></html>
