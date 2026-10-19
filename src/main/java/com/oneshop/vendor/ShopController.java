@@ -79,16 +79,4 @@ public class ShopController {
         model.addAttribute("products", productRepository.findByShopIdAndActiveTrue(id, PageRequest.of(0, 12)));
         return "web/shop";
     }
-
-    @GetMapping("/admin/shops")
-    public String pending(Model model) {
-        model.addAttribute("shops", shopRepository.findByStatus(ShopStatus.PENDING, PageRequest.of(0, 50)));
-        return "admin/shops";
-    }
-
-    @PostMapping("/admin/shops/{id}/approve")
-    public String approve(@PathVariable Long id) {
-        shopService.approve(id);
-        return "redirect:/admin/shops";
-    }
 }
