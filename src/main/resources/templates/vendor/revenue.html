@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"><head><title>Doanh thu shop</title><script src="https://cdn.jsdelivr.net/npm/chart.js"></script></head><body>
+<h2>Doanh thu shop</h2>
+<form method="get" class="row g-2 mb-4"><div class="col-auto"><select class="form-select" name="period" aria-label="Kỳ thống kê"><option value="DAY" th:selected="${period == 'DAY'}">Theo ngày</option><option value="MONTH" th:selected="${period == 'MONTH'}">Theo tháng</option><option value="YEAR" th:selected="${period == 'YEAR'}">Theo năm</option></select></div><div class="col-auto"><input class="form-control" type="number" name="day" min="1" max="31" th:value="${day}" aria-label="Ngày"></div><div class="col-auto"><input class="form-control" type="number" name="month" min="1" max="12" th:value="${month}" aria-label="Tháng"></div><div class="col-auto"><input class="form-control" type="number" name="year" min="2020" th:value="${year}" aria-label="Năm"></div><div class="col-auto"><button class="btn btn-danger">Xem</button></div></form>
+<div class="row g-3 mb-4"><div class="col-md-3"><div class="card card-body"><small>Đơn đã giao</small><strong th:text="${summary.orders}"></strong></div></div><div class="col-md-3"><div class="card card-body"><small>Doanh thu</small><strong th:text="${#numbers.formatDecimal(summary.gross,0,'POINT',0,'COMMA')} + ' đ'"></strong></div></div><div class="col-md-3"><div class="card card-body"><small>Chiết khấu sàn</small><strong th:text="${#numbers.formatDecimal(summary.commission,0,'POINT',0,'COMMA')} + ' đ'"></strong></div></div><div class="col-md-3"><div class="card card-body"><small>Thực nhận</small><strong class="text-success" th:text="${#numbers.formatDecimal(summary.net,0,'POINT',0,'COMMA')} + ' đ'"></strong></div></div></div>
+<div class="card card-body"><canvas id="revenueChart" height="100" aria-label="Biểu đồ doanh thu theo ngày"></canvas></div>
+<script th:inline="javascript">
+const points = /*[[${summary.points}]]*/ [];
+new Chart(document.getElementById('revenueChart'), {
+  type: 'bar',
+  data: { labels: points.map(point => point.label), datasets: [
+    { label: 'Doanh thu', data: points.map(point => point.gross), backgroundColor: '#dc3545' },
+    { label: 'Thực nhận', data: points.map(point => point.net), backgroundColor: '#198754' }
+  ] },
+  options: { responsive: true, scales: { y: { beginAtZero: true } } }
+});
+</script></body></html>

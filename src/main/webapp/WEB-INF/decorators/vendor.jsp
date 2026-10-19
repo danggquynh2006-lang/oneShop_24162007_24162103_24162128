@@ -7,11 +7,19 @@
     <title><sitemesh:write property="title"/> | OneShop Vendor</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        @media (max-width: 900px) {
+            .vendor-shell { flex-direction: column; }
+            .vendor-sidebar { width: 100% !important; }
+            .vendor-sidebar .nav { flex-direction: row !important; flex-wrap: wrap; }
+            .vendor-content { padding: 1rem !important; }
+        }
+    </style>
     <sitemesh:write property="head"/>
 </head>
 <body>
-    <div class="d-flex min-vh-100">
-        <aside class="bg-dark text-white p-3 d-flex flex-column" style="width:240px">
+    <div class="d-flex min-vh-100 vendor-shell">
+        <aside class="bg-dark text-white p-3 d-flex flex-column vendor-sidebar" style="width:240px">
             <h5 class="text-danger">OneShop Vendor</h5>
             <ul class="nav flex-column mt-3">
                 <li class="nav-item"><a class="nav-link text-white" href="/vendor/shop"><i class="bi bi-shop"></i> Thông tin shop</a></li>
@@ -29,7 +37,7 @@
                 </form>
             </div>
         </aside>
-        <div class="flex-grow-1 p-4 bg-light">
+        <div class="flex-grow-1 p-4 bg-light vendor-content">
             <sitemesh:write property="body"/>
         </div>
     </div>

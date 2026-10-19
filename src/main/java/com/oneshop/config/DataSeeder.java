@@ -4,6 +4,8 @@ import java.math.BigDecimal;
 import java.util.List;
 
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.annotation.Order;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
@@ -18,6 +20,7 @@ import com.oneshop.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 
 @Component
+@Order(0)
 @RequiredArgsConstructor
 public class DataSeeder implements CommandLineRunner {
 
@@ -29,9 +32,12 @@ public class DataSeeder implements CommandLineRunner {
     private final CarrierRepository carrierRepository;
     private final PasswordEncoder passwordEncoder;
 
+    @Value("${oneshop.seed-demo-users:false}")
+    private boolean seedDemoUsers;
+
     @Override
     public void run(String... args) {
-        seedUsers();
+        if (seedDemoUsers) seedUsers();
         seedCategories();
         seedCarriers();
     }
