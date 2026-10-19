@@ -1,0 +1,5 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"><head><title>Kết quả thanh toán</title></head><body>
+<main class="container py-5 text-center"><h2 th:text="${result.paid ? 'Thanh toán thành công' : 'Thanh toán chưa thành công'}"></h2>
+<p th:text="${result.message}"></p><a class="btn btn-danger" href="/user/orders">Xem đơn hàng</a></main>
+</body></html>

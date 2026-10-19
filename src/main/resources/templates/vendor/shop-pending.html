@@ -1,0 +1,8 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"><head><title>Trạng thái shop</title></head><body>
+<main class="container py-5"><h2 th:text="${shop.name}"></h2>
+    <p>Trạng thái: <strong th:text="${shop.status}"></strong></p>
+    <p th:if="${shop.status.name() == 'PENDING'}">Hồ sơ đang chờ quản trị viên duyệt.</p>
+    <p th:if="${shop.status.name() == 'LOCKED'}">Shop đã bị khóa. Vui lòng liên hệ quản trị viên.</p>
+    <a th:if="${shop.status.name() == 'ACTIVE'}" href="/vendor/shop" class="btn btn-danger">Vào quản lý shop</a>
+</main></body></html>

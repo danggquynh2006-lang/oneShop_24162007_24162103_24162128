@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"><head><title>Thông tin shop</title></head><body>
+<h2>Thông tin shop</h2>
+<div class="alert alert-success" th:if="${param.updated}">Đã lưu thay đổi.</div>
+<div class="card"><div class="card-body">
+    <img th:if="${shop.banner}" th:src="${shop.banner}" class="w-100 rounded mb-3" style="max-height:220px;object-fit:cover" alt="Banner shop">
+    <img th:if="${shop.logo}" th:src="${shop.logo}" style="width:80px;height:80px;object-fit:cover" class="rounded mb-3" alt="Logo shop">
+    <form th:action="@{/vendor/shop}" th:object="${form}" method="post" enctype="multipart/form-data">
+        <div class="mb-3"><label class="form-label">Tên shop</label><input class="form-control" th:field="*{name}" required><div class="text-danger" th:errors="*{name}"></div></div>
+        <div class="mb-3"><label class="form-label">Mô tả</label><textarea class="form-control" th:field="*{description}" rows="4"></textarea></div>
+        <div class="mb-3"><label class="form-label">Địa chỉ</label><input class="form-control" th:field="*{address}" required><div class="text-danger" th:errors="*{address}"></div></div>
+        <div class="row mb-3"><div class="col"><label class="form-label">Logo mới</label><input type="file" class="form-control" name="logo" accept="image/*"></div><div class="col"><label class="form-label">Banner mới</label><input type="file" class="form-control" name="banner" accept="image/*"></div></div>
+        <button class="btn btn-danger">Lưu thông tin</button>
+        <a th:href="@{/shops/{id}(id=${shop.id})}" class="btn btn-outline-secondary">Xem trang công khai</a>
+    </form>
+</div></div></body></html>
