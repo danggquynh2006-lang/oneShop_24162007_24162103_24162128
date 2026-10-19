@@ -212,10 +212,11 @@ public class AuthController {
 
     // ===== Tiện ích =====
 
-    /** Trang đích sau khi đăng nhập theo vai trò (Vendor, Shipper sẽ bổ sung khi có trang). */
+    /** Trang đích sau khi đăng nhập theo vai trò (Vendor sẽ bổ sung khi có trang). */
     private String homeFor(Role role) {
         return switch (role) {
             case ADMIN, MANAGER -> "/admin/users";
+            case SHIPPER -> "/shipper/orders";
             default -> "/";
         };
     }

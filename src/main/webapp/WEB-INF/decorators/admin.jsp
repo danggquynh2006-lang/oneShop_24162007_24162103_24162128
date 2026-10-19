@@ -18,6 +18,7 @@
                 <li class="nav-item"><a class="nav-link text-white" href="/admin/categories"><i class="bi bi-tags"></i> Danh mục</a></li>
                 <li class="nav-item"><a class="nav-link text-white" href="/admin/shops"><i class="bi bi-shop"></i> Shop</a></li>
                 <li class="nav-item"><a class="nav-link text-white" href="/admin/carriers"><i class="bi bi-truck"></i> Nhà vận chuyển</a></li>
+                <li class="nav-item"><a class="nav-link text-white" href="/admin/orders"><i class="bi bi-receipt"></i> Đơn hàng</a></li>
                 <li class="nav-item"><a class="nav-link text-white" href="/admin/promotions"><i class="bi bi-percent"></i> Khuyến mãi</a></li>
             </ul>
             <div class="mt-auto pt-3 border-top border-secondary small">
