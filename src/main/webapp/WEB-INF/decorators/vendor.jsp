@@ -27,6 +27,7 @@
                 <li class="nav-item"><a class="nav-link text-white" href="/vendor/orders"><i class="bi bi-receipt"></i> Đơn hàng</a></li>
                 <li class="nav-item"><a class="nav-link text-white" href="/vendor/promotions"><i class="bi bi-percent"></i> Khuyến mãi</a></li>
                 <li class="nav-item"><a class="nav-link text-white" href="/vendor/revenue"><i class="bi bi-graph-up"></i> Doanh thu</a></li>
+                <li class="nav-item"><a class="nav-link text-white" href="/vendor/reviews"><i class="bi bi-star"></i> Đánh giá</a></li>
             </ul>
             <div class="mt-auto pt-3 border-top border-secondary small">
                 <% if (request.getUserPrincipal() != null) { %>

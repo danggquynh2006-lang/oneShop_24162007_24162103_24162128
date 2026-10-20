@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<section th:fragment="section(s)" id="reviews" class="my-4">
+    <div class="d-flex align-items-center flex-wrap gap-3 mb-3">
+        <h5 class="mb-0">Đánh giá sản phẩm</h5>
+        <span class="text-warning fs-5" th:if="${s.total > 0}">
+            <i class="bi bi-star-fill"></i>
+            <span th:text="${#numbers.formatDecimal(s.average, 1, 1)}"></span>
+        </span>
+        <span class="text-muted" th:text="'(' + ${s.total} + ' đánh giá)'"></span>
+    </div>
+
+    <div class="alert alert-success" th:if="${reviewMessage}" th:text="${reviewMessage}"></div>
+    <div class="alert alert-danger" th:if="${reviewError}" th:text="${reviewError}"></div>
+
+    <!-- Form viết đánh giá: chỉ hiện khi đã mua, đơn đã giao, chưa đánh giá -->
+    <div class="card card-body mb-4" th:if="${s.canReview}">
+        <form th:action="@{/user/reviews/{id}(id=${s.productId})}" method="post" enctype="multipart/form-data">
+            <div class="mb-3">
+                <label for="review-rating" class="form-label">Chất lượng sản phẩm</label>
+                <select id="review-rating" name="rating" class="form-select w-auto">
+                    <option value="5" selected>★★★★★ Tuyệt vời</option>
+                    <option value="4">★★★★☆ Tốt</option>
+                    <option value="3">★★★☆☆ Bình thường</option>
+                    <option value="2">★★☆☆☆ Chưa tốt</option>
+                    <option value="1">★☆☆☆☆ Rất tệ</option>
+                </select>
+            </div>
+            <div class="mb-3">
+                <label for="review-content" class="form-label">Nhận xét của bạn</label>
+                <textarea id="review-content" name="content" class="form-control" rows="4"
+                          minlength="50" maxlength="2000" required
+                          placeholder="Chia sẻ cảm nhận của bạn về sản phẩm (tối thiểu 50 ký tự)..."></textarea>
+                <div class="form-text"><span id="review-count">0</span>/50 ký tự tối thiểu</div>
+            </div>
+            <div class="mb-3">
+                <label for="review-media" class="form-label">Ảnh / video (tùy chọn)</label>
+                <input id="review-media" type="file" name="media" class="form-control" multiple
+                       accept="image/jpeg,image/png,image/webp,image/gif,video/mp4,video/webm,video/quicktime">
+                <div class="form-text">Tối đa 5 tệp, mỗi ảnh ≤ 5MB, mỗi video ≤ 10MB.</div>
+            </div>
+            <button type="submit" class="btn btn-danger">Gửi đánh giá</button>
+        </form>
+        <script>
+            (function () {
+                var area = document.getElementById('review-content');
+                var counter = document.getElementById('review-count');
+                if (area && counter) {
+                    area.addEventListener('input', function () {
+                        counter.textContent = area.value.trim().length;
+                    });
+                }
+            })();
+        </script>
+    </div>
+
+    <!-- Lý do chưa được đánh giá -->
+    <div class="alert alert-light border" th:if="${!s.canReview and s.note}">
+        <span th:text="${s.note}"></span>
+        <a th:if="${!s.loggedIn}" th:href="@{/login}" class="ms-1">Đăng nhập</a>
+    </div>
+
+    <!-- Danh sách đánh giá -->
+    <p class="text-muted" th:if="${s.reviews.empty}">Chưa có đánh giá nào.</p>
+    <div class="border-bottom py-3" th:each="review : ${s.reviews.content}">
+        <div class="d-flex justify-content-between">
+            <strong th:text="${review.user.fullName} ?: 'Người dùng ẩn danh'"></strong>
+            <small class="text-muted" th:text="${#temporals.format(review.createdAt,'dd/MM/yyyy HH:mm')}"></small>
+        </div>
+        <div class="text-warning">
+            <i th:each="i : ${#numbers.sequence(1, 5)}"
+               th:class="${i <= review.rating} ? 'bi bi-star-fill' : 'bi bi-star'"></i>
+        </div>
+        <p class="mb-2 mt-1" style="white-space: pre-line" th:text="${review.content}"></p>
+        <div th:if="${!review.media.empty}">
+            <th:block th:each="m : ${review.media}">
+                <a th:if="${m.type.name() == 'IMAGE'}" th:href="${m.url}" target="_blank" rel="noopener">
+                    <img th:src="${m.url}" alt="Ảnh đánh giá" class="rounded border me-2 mb-2" style="height:90px">
+                </a>
+                <video th:if="${m.type.name() == 'VIDEO'}" th:src="${m.url}" controls
+                       class="rounded border me-2 mb-2" style="height:140px"></video>
+            </th:block>
+        </div>
+    </div>
+
+    <nav th:if="${s.reviews.totalPages > 1}" class="mt-3">
+        <ul class="pagination">
+            <li class="page-item" th:classappend="${s.reviews.first} ? 'disabled'">
+                <a class="page-link"
+                   th:href="@{/product/{id}(id=${s.productId},reviewPage=${s.reviews.number - 1})} + '#reviews'">Trước</a>
+            </li>
+            <li class="page-item" th:each="p : ${#numbers.sequence(0, s.reviews.totalPages - 1)}"
+                th:classappend="${p == s.reviews.number} ? 'active'">
+                <a class="page-link" th:text="${p + 1}"
+                   th:href="@{/product/{id}(id=${s.productId},reviewPage=${p})} + '#reviews'"></a>
+            </li>
+            <li class="page-item" th:classappend="${s.reviews.last} ? 'disabled'">
+                <a class="page-link"
+                   th:href="@{/product/{id}(id=${s.productId},reviewPage=${s.reviews.number + 1})} + '#reviews'">Sau</a>
+            </li>
+        </ul>
+    </nav>
+</section>
+</body>
+</html>
