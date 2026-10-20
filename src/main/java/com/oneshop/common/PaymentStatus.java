@@ -1,3 +1,3 @@
 package com.oneshop.common;
 
-public enum PaymentStatus { UNPAID, PAID, REFUNDED, FAILED }
+public enum PaymentStatus { UNPAID, PAID, REFUND_PENDING, REFUNDED, FAILED }

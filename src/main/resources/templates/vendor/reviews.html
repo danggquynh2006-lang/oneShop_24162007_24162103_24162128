@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Đánh giá của shop</title>
+</head>
+<body>
+<h3 class="mb-3">Đánh giá sản phẩm của shop</h3>
+<p class="text-muted">Có <strong th:text="${reviews.totalElements}"></strong> đánh giá.</p>
+
+<div class="table-responsive">
+    <table class="table table-hover align-middle bg-white">
+        <thead class="table-light">
+        <tr>
+            <th>Sản phẩm</th>
+            <th>Khách hàng</th>
+            <th>Số sao</th>
+            <th>Nội dung</th>
+            <th>Tệp đính kèm</th>
+            <th>Ngày</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:if="${reviews.empty}">
+            <td colspan="6" class="text-center text-muted py-4">Chưa có đánh giá nào.</td>
+        </tr>
+        <tr th:each="review : ${reviews.content}">
+            <td>
+                <a th:href="@{/product/{id}(id=${review.product.id})}" target="_blank"
+                   th:text="${review.product.name}"></a>
+            </td>
+            <td th:text="${review.user.fullName} ?: ${review.user.email}"></td>
+            <td class="text-warning text-nowrap">
+                <i th:each="i : ${#numbers.sequence(1, 5)}"
+                   th:class="${i <= review.rating} ? 'bi bi-star-fill' : 'bi bi-star'"></i>
+            </td>
+            <td style="max-width:360px; white-space: pre-line" th:text="${review.content}"></td>
+            <td>
+                <th:block th:each="m : ${review.media}">
+                    <a th:href="${m.url}" target="_blank" rel="noopener" class="me-1"
+                       th:text="${m.type.name() == 'VIDEO'} ? 'Video' : 'Ảnh'"></a>
+                </th:block>
+                <span class="text-muted" th:if="${review.media.empty}">—</span>
+            </td>
+            <td th:text="${#temporals.format(review.createdAt,'dd/MM/yyyy HH:mm')}"></td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+
+<nav th:if="${reviews.totalPages > 1}">
+    <ul class="pagination">
+        <li class="page-item" th:classappend="${reviews.first} ? 'disabled'">
+            <a class="page-link" th:href="@{/vendor/reviews(page=${reviews.number - 1})}">Trước</a>
+        </li>
+        <li class="page-item" th:each="p : ${#numbers.sequence(0, reviews.totalPages - 1)}"
+            th:classappend="${p == reviews.number} ? 'active'">
+            <a class="page-link" th:text="${p + 1}" th:href="@{/vendor/reviews(page=${p})}"></a>
+        </li>
+        <li class="page-item" th:classappend="${reviews.last} ? 'disabled'">
+            <a class="page-link" th:href="@{/vendor/reviews(page=${reviews.number + 1})}">Sau</a>
+        </li>
+    </ul>
+</nav>
+</body>
+</html>

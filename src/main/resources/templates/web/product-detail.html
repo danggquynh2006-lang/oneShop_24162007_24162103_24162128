@@ -28,8 +28,7 @@
         </div>
 
         <hr class="my-4">
-        <h5>Đánh giá sản phẩm</h5>
-        <p class="text-muted">Phần đánh giá do Quỳnh làm sẽ được nhúng vào đây.</p>
+        <div th:replace="~{fragments/reviews :: section(${reviewSection})}"></div>
 
         <hr class="my-4">
         <h5>Sản phẩm liên quan</h5>

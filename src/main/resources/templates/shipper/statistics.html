@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Thống kê đơn giao</title>
+</head>
+<body>
+<h3 class="mb-3">Thống kê đơn giao</h3>
+
+<form th:action="@{/shipper/statistics}" method="get" class="row g-2 mb-4">
+    <div class="col-md-3">
+        <select name="month" class="form-select">
+            <option th:each="m : ${#numbers.sequence(1, 12)}" th:value="${m}"
+                    th:selected="${m == stats.month}" th:text="'Tháng ' + ${m}"></option>
+        </select>
+    </div>
+    <div class="col-md-3">
+        <input type="number" name="year" class="form-control" min="2000" max="2100" th:value="${stats.year}">
+    </div>
+    <div class="col-md-2">
+        <button type="submit" class="btn btn-danger w-100">Xem</button>
+    </div>
+</form>
+
+<div class="row g-3 mb-4">
+    <div class="col-md-3">
+        <div class="card card-body text-center">
+            <div class="text-muted small">Đã giao trong tháng</div>
+            <div class="fs-3 fw-bold" th:text="${stats.deliveredInMonth}"></div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card card-body text-center">
+            <div class="text-muted small">Tiền thu hộ COD trong tháng</div>
+            <div class="fs-4 fw-bold text-danger"
+                 th:text="${#numbers.formatDecimal(stats.codInMonth,0,'POINT',0,'COMMA')} + ' đ'"></div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card card-body text-center">
+            <div class="text-muted small">Đã giao trong năm</div>
+            <div class="fs-3 fw-bold" th:text="${stats.deliveredInYear}"></div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card card-body text-center">
+            <div class="text-muted small">Tiền thu hộ COD trong năm</div>
+            <div class="fs-4 fw-bold text-danger"
+                 th:text="${#numbers.formatDecimal(stats.codInYear,0,'POINT',0,'COMMA')} + ' đ'"></div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-md-4">
+        <div class="card card-body text-center">
+            <div class="text-muted small">Chờ lấy hàng</div>
+            <div class="fs-4 fw-bold" th:text="${stats.waitingPickup}"></div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card card-body text-center">
+            <div class="text-muted small">Đang xử lý (đã lấy / đang giao)</div>
+            <div class="fs-4 fw-bold" th:text="${stats.inProgress}"></div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card card-body text-center">
+            <div class="text-muted small">Giao thất bại</div>
+            <div class="fs-4 fw-bold" th:text="${stats.failed}"></div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-6">
+        <h5>Theo ngày (tháng đã chọn)</h5>
+        <table class="table table-sm bg-white">
+            <thead class="table-light">
+            <tr><th>Ngày</th><th class="text-end">Số đơn giao</th><th class="text-end">Thu hộ COD</th></tr>
+            </thead>
+            <tbody>
+            <tr th:each="r : ${stats.days}" th:classappend="${r.delivered == 0} ? 'text-muted'">
+                <td th:text="${r.label}"></td>
+                <td class="text-end" th:text="${r.delivered}"></td>
+                <td class="text-end" th:text="${#numbers.formatDecimal(r.cod,0,'POINT',0,'COMMA')} + ' đ'"></td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+    <div class="col-lg-6">
+        <h5>Theo tháng (năm đã chọn)</h5>
+        <table class="table table-sm bg-white">
+            <thead class="table-light">
+            <tr><th>Tháng</th><th class="text-end">Số đơn giao</th><th class="text-end">Thu hộ COD</th></tr>
+            </thead>
+            <tbody>
+            <tr th:each="r : ${stats.months}" th:classappend="${r.delivered == 0} ? 'text-muted'">
+                <td th:text="${r.label}"></td>
+                <td class="text-end" th:text="${r.delivered}"></td>
+                <td class="text-end" th:text="${#numbers.formatDecimal(r.cod,0,'POINT',0,'COMMA')} + ' đ'"></td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+</body>
+</html>

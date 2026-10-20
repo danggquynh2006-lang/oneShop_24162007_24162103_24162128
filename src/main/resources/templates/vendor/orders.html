@@ -1,0 +1,9 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"><head><title>Đơn hàng shop</title></head><body>
+<h2>Đơn hàng shop</h2>
+<div class="d-flex flex-wrap gap-2 my-3"><a class="btn btn-sm btn-outline-secondary" href="/vendor/orders">Tất cả</a><a class="btn btn-sm btn-outline-secondary" th:each="status : ${statuses}" th:href="@{/vendor/orders(status=${status})}" th:text="${status.label}"></a></div>
+<div class="table-responsive"><table class="table table-hover bg-white"><thead><tr><th>Mã đơn</th><th>Khách</th><th>Ngày đặt</th><th>Trạng thái</th><th>Tổng</th><th></th></tr></thead>
+<tbody><tr th:each="order : ${orders.content}"><td th:text="${order.id}"></td><td th:text="${order.user.fullName}"></td><td th:text="${#temporals.format(order.createdAt,'dd/MM/yyyy HH:mm')}"></td><td th:text="${order.status.label}"></td><td th:text="${#numbers.formatDecimal(order.total,0,'POINT',0,'COMMA')} + ' đ'"></td><td><a th:href="@{/vendor/orders/{id}(id=${order.id})}">Chi tiết</a></td></tr></tbody></table></div>
+<p th:if="${orders.empty}">Chưa có đơn hàng.</p>
+<nav th:if="${orders.totalPages > 1}"><a th:each="page : ${#numbers.sequence(0,orders.totalPages - 1)}" th:href="@{/vendor/orders(page=${page},status=${selected})}" th:text="${page + 1}" class="btn btn-sm btn-outline-secondary me-1"></a></nav>
+</body></html>
