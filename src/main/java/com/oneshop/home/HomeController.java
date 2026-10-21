@@ -1,5 +1,6 @@
 package com.oneshop.home;
 
+import java.util.List;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -8,6 +9,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 
 import com.oneshop.common.ResourceNotFoundException;
 import com.oneshop.common.ShopStatus;
+import com.oneshop.entity.Product;
 import com.oneshop.repository.CategoryRepository;
 import com.oneshop.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
@@ -19,11 +21,14 @@ public class HomeController {
     private final HomeCategoryService categoryService;
     private final CategoryRepository categories;
     private final ProductRepository products;
+    private final ProductImageService productImages;
 
     @GetMapping("/")
     public String home(Model model) {
         model.addAttribute("categories", categoryService.activeTree());
-        model.addAttribute("products", products.findFeatured(ShopStatus.ACTIVE, PageRequest.of(0, 8)));
+        List<Product> featured = products.findFeatured(ShopStatus.ACTIVE, PageRequest.of(0, 8));
+        model.addAttribute("products", featured);
+        model.addAttribute("imageUrls", productImages.mainUrls(featured));
         return "web/home";
     }
 
@@ -31,14 +36,18 @@ public class HomeController {
     public String category(@PathVariable Long id, Model model) {
         model.addAttribute("category", categories.findById(id).filter(category -> category.isActive())
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy danh mục.")));
-        model.addAttribute("products", products.findPublicByCategory(id, ShopStatus.ACTIVE));
+        List<Product> catalog = products.findPublicByCategory(id, ShopStatus.ACTIVE);
+        model.addAttribute("products", catalog);
+        model.addAttribute("imageUrls", productImages.mainUrls(catalog));
         return "web/category";
     }
 
     @GetMapping("/product/{id}")
     public String productDetail(@PathVariable Long id, Model model) {
-        model.addAttribute("product", products.findPublicById(id, ShopStatus.ACTIVE)
-                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy sản phẩm.")));
+        Product product = products.findPublicById(id, ShopStatus.ACTIVE)
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy sản phẩm."));
+        model.addAttribute("product", product);
+        model.addAttribute("imageUrl", productImages.mainUrls(List.of(product)).get(product.getId()));
         return "web/product-detail";
     }
 }

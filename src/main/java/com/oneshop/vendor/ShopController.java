@@ -12,6 +12,7 @@ import com.oneshop.common.BusinessException;
 import com.oneshop.common.ResourceNotFoundException;
 import com.oneshop.common.ShopStatus;
 import com.oneshop.entity.Shop;
+import com.oneshop.home.ProductImageService;
 import com.oneshop.repository.ProductRepository;
 import com.oneshop.repository.ShopRepository;
 import jakarta.validation.Valid;
@@ -22,6 +23,7 @@ public class ShopController {
     private final ShopService shopService;
     private final ShopRepository shopRepository;
     private final ProductRepository productRepository;
+    private final ProductImageService productImageService;
 
     @GetMapping("/shop/register")
     public String registration(Model model) {
@@ -76,7 +78,9 @@ public class ShopController {
         Shop shop = shopRepository.findByIdAndStatus(id, ShopStatus.ACTIVE)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy shop."));
         model.addAttribute("shop", shop);
-        model.addAttribute("products", productRepository.findByShopIdAndActiveTrue(id, PageRequest.of(0, 24)));
+        var catalog = productRepository.findByShopIdAndActiveTrue(id, PageRequest.of(0, 24));
+        model.addAttribute("products", catalog);
+        model.addAttribute("imageUrls", productImageService.mainUrls(catalog.getContent()));
         return "web/shop";
     }
 

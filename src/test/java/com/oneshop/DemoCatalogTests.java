@@ -11,12 +11,14 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 import com.oneshop.entity.Category;
 import com.oneshop.repository.CategoryRepository;
+import com.oneshop.repository.ProductImageRepository;
 import com.oneshop.repository.ProductRepository;
 
 @SpringBootTest @ActiveProfiles("demo") @Transactional
 class DemoCatalogTests {
     @Autowired private CategoryRepository categories;
     @Autowired private ProductRepository products;
+    @Autowired private ProductImageRepository images;
 
     @Test
     void highEndMakeupHasSixProductsPerCategory() {
@@ -30,6 +32,12 @@ class DemoCatalogTests {
             assertTrue(catalog.stream().allMatch(product -> product.isActive()
                     && product.getPrice().compareTo(BigDecimal.ZERO) > 0
                     && product.getStock() > 0 && !product.getBrand().isBlank()), categoryName);
+            assertTrue(catalog.stream().allMatch(product -> {
+                var productImages = images.findByProductIdOrderByMainImageDescIdAsc(product.getId());
+                return productImages.size() == 1 && productImages.get(0).isMainImage()
+                        && productImages.get(0).getUrl().startsWith("https://");
+            }), categoryName);
         }
+        assertEquals(18, images.count());
     }
 }

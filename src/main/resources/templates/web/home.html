@@ -28,6 +28,8 @@
         <div class="row">
             <div class="col-6 col-md-3 mb-4" th:each="product : ${products}">
                 <div class="card h-100">
+                    <img th:if="${imageUrls[product.id] != null}" th:src="${imageUrls[product.id]}" th:alt="${product.name}"
+                         class="card-img-top p-2" style="height:210px;object-fit:contain" loading="lazy" referrerpolicy="no-referrer">
                     <div class="card-body">
                         <h6 class="card-title">
 						    <a th:href="@{/product/{id}(id=${product.id})}" class="stretched-link text-decoration-none"
