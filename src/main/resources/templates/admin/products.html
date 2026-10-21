@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Quản lý sản phẩm</title>
+</head>
+<body>
+<h3 class="mb-3">Quản lý sản phẩm</h3>
+
+<div class="alert alert-success" th:if="${message}" th:text="${message}"></div>
+<div class="alert alert-danger" th:if="${error}" th:text="${error}"></div>
+
+<form th:action="@{/admin/products}" method="get" class="row g-2 mb-3">
+    <div class="col-md-4">
+        <input type="text" name="keyword" class="form-control" placeholder="Tìm theo tên hoặc thương hiệu"
+               th:value="${keyword}">
+    </div>
+    <div class="col-md-3">
+        <select name="shopId" class="form-select">
+            <option value="">Tất cả shop</option>
+            <option th:each="s : ${shops}" th:value="${s.id}" th:text="${s.name}"
+                    th:selected="${s.id == shopId}"></option>
+        </select>
+    </div>
+    <div class="col-md-3">
+        <select name="status" class="form-select">
+            <option value="">Tất cả trạng thái</option>
+            <option value="active" th:selected="${status == 'active'}">Đang bán</option>
+            <option value="hidden" th:selected="${status == 'hidden'}">Vendor đã ẩn</option>
+            <option value="locked" th:selected="${status == 'locked'}">Bị khóa</option>
+        </select>
+    </div>
+    <div class="col-md-2">
+        <button type="submit" class="btn btn-danger w-100"><i class="bi bi-search"></i> Tìm</button>
+    </div>
+</form>
+
+<p class="text-muted">Có <strong th:text="${products.totalElements}"></strong> sản phẩm.</p>
+
+<div class="table-responsive">
+    <table class="table table-hover align-middle bg-white">
+        <thead class="table-light">
+        <tr>
+            <th>ID</th>
+            <th>Sản phẩm</th>
+            <th>Shop</th>
+            <th>Danh mục</th>
+            <th>Giá</th>
+            <th>Tồn</th>
+            <th>Đã bán</th>
+            <th>Trạng thái</th>
+            <th class="text-end">Thao tác</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:if="${products.empty}">
+            <td colspan="9" class="text-center text-muted py-4">Không có sản phẩm nào.</td>
+        </tr>
+        <tr th:each="product : ${products.content}">
+            <td th:text="${product.id}"></td>
+            <td>
+                <strong th:text="${product.name}"></strong>
+                <div class="small text-muted" th:if="${product.brand}" th:text="${product.brand}"></div>
+            </td>
+            <td th:text="${product.shop.name}"></td>
+            <td th:text="${product.category.name}"></td>
+            <td th:text="${#numbers.formatDecimal(product.price,0,'POINT',0,'COMMA')} + ' đ'"></td>
+            <td th:text="${product.stock}"></td>
+            <td th:text="${product.sold}"></td>
+            <td>
+                <span class="badge bg-danger" th:if="${product.isLocked()}">Bị khóa</span>
+                <span class="badge bg-success" th:if="${!product.isLocked() and product.active}">Đang bán</span>
+                <span class="badge bg-secondary" th:if="${!product.isLocked() and !product.active}">Vendor đã ẩn</span>
+            </td>
+            <td class="text-end">
+                <div class="d-flex gap-2 justify-content-end">
+                    <form th:if="${!product.isLocked()}"
+                          th:action="@{/admin/products/{id}/lock(id=${product.id})}" method="post"
+                          onsubmit="return confirm('Khóa sản phẩm này? Sản phẩm sẽ bị ẩn và Vendor không thể hiện lại.')">
+                        <input type="hidden" name="keyword" th:value="${keyword}">
+                        <input type="hidden" name="shopId" th:value="${shopId}">
+                        <input type="hidden" name="status" th:value="${status}">
+                        <input type="hidden" name="page" th:value="${products.number}">
+                        <button type="submit" class="btn btn-sm btn-outline-warning">Khóa</button>
+                    </form>
+                    <form th:if="${product.isLocked()}"
+                          th:action="@{/admin/products/{id}/unlock(id=${product.id})}" method="post">
+                        <input type="hidden" name="keyword" th:value="${keyword}">
+                        <input type="hidden" name="shopId" th:value="${shopId}">
+                        <input type="hidden" name="status" th:value="${status}">
+                        <input type="hidden" name="page" th:value="${products.number}">
+                        <button type="submit" class="btn btn-sm btn-outline-success">Mở khóa</button>
+                    </form>
+                    <form th:action="@{/admin/products/{id}/delete(id=${product.id})}" method="post"
+                          onsubmit="return confirm('Xóa vĩnh viễn sản phẩm này?')">
+                        <input type="hidden" name="keyword" th:value="${keyword}">
+                        <input type="hidden" name="shopId" th:value="${shopId}">
+                        <input type="hidden" name="status" th:value="${status}">
+                        <input type="hidden" name="page" th:value="${products.number}">
+                        <button type="submit" class="btn btn-sm btn-outline-danger">Xóa</button>
+                    </form>
+                </div>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+
+<nav th:if="${products.totalPages > 1}">
+    <ul class="pagination">
+        <li class="page-item" th:classappend="${products.first} ? 'disabled'">
+            <a class="page-link"
+               th:href="@{/admin/products(keyword=${keyword},shopId=${shopId},status=${status},page=${products.number - 1})}">Trước</a>
+        </li>
+        <li class="page-item" th:each="p : ${#numbers.sequence(0, products.totalPages - 1)}"
+            th:classappend="${p == products.number} ? 'active'">
+            <a class="page-link" th:text="${p + 1}"
+               th:href="@{/admin/products(keyword=${keyword},shopId=${shopId},status=${status},page=${p})}"></a>
+        </li>
+        <li class="page-item" th:classappend="${products.last} ? 'disabled'">
+            <a class="page-link"
+               th:href="@{/admin/products(keyword=${keyword},shopId=${shopId},status=${status},page=${products.number + 1})}">Sau</a>
+        </li>
+    </ul>
+</nav>
+</body>
+</html>
