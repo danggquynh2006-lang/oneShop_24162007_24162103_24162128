@@ -26,19 +26,20 @@
 	</div>
         <h3 class="mb-4">Sản phẩm bán chạy</h3>
         <div class="row">
-            <div class="col-6 col-md-3 mb-4" th:each="i : ${#numbers.sequence(1, 8)}">
+            <div class="col-6 col-md-3 mb-4" th:each="product : ${products}">
                 <div class="card h-100">
                     <div class="card-body">
                         <h6 class="card-title">
-						    <a th:href="@{/product/{id}(id=${i})}" class="stretched-link text-decoration-none"
-						       th:text="'Sản phẩm mẫu ' + ${i}"></a>
+						    <a th:href="@{/product/{id}(id=${product.id})}" class="stretched-link text-decoration-none"
+						       th:text="${product.name}"></a>
 						</h6>
-                        <div class="text-danger fw-bold">199.000 đ</div>
-                        <small class="text-muted">Đã bán 25</small>
+                        <div class="text-danger fw-bold" th:text="${#numbers.formatDecimal(product.price,0,'POINT',0,'COMMA')} + ' đ'"></div>
+                        <small class="text-muted" th:text="${product.brand}"></small>
                     </div>
                 </div>
             </div>
         </div>
+        <p th:if="${products.empty}">Chưa có sản phẩm.</p>
     </div>
 </body>
 </html>

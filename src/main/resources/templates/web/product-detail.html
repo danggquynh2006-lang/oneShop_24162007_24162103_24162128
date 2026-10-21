@@ -1,48 +1,24 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <title>Chi tiết sản phẩm - OneShop</title>
+    <title th:text="${product.name} + ' - OneShop'">Chi tiết sản phẩm - OneShop</title>
 </head>
 <body>
     <div class="container my-4">
+        <a th:href="@{/shops/{id}(id=${product.shop.id})}">← Về cửa hàng</a>
         <div class="row">
             <div class="col-md-5 mb-4">
-                <div class="border rounded p-5 text-center text-muted">Ảnh sản phẩm</div>
+                <div class="border rounded p-5 text-center text-muted">Shop chưa thêm ảnh sản phẩm</div>
             </div>
             <div class="col-md-7">
-                <h3 th:text="'Sản phẩm mẫu ' + ${id}"></h3>
-                <div class="text-danger fs-3 fw-bold my-2">199.000 đ</div>
-                <p class="text-muted">Đã bán 25 · Còn 100 sản phẩm · Shop: Cửa hàng mẫu</p>
-                <p>Mô tả sản phẩm sẽ hiển thị ở đây.</p>
-
-                <div class="d-flex align-items-center gap-2 mb-3">
-                    <label for="qty" class="mb-0">Số lượng</label>
-                    <input id="qty" type="number" class="form-control" style="width: 90px" value="1" min="1">
-                </div>
-
-                <div class="d-flex gap-2">
-                    <button class="btn btn-outline-danger" type="button">Thêm vào giỏ</button>
-                    <button class="btn btn-danger" type="button">Mua ngay</button>
-                </div>
+                <p class="text-muted" th:text="${product.brand}"></p>
+                <div class="text-danger fs-3 fw-bold my-2" th:text="${#numbers.formatDecimal(product.price,0,'POINT',0,'COMMA')} + ' đ'"></div>
+                <p class="text-muted" th:text="'Đã bán ' + ${product.sold} + ' · Còn ' + ${product.stock} + ' sản phẩm'"></p>
+                <p th:text="${product.description}"></p>
+                <p>Shop: <a th:href="@{/shops/{id}(id=${product.shop.id})}" th:text="${product.shop.name}"></a></p>
             </div>
         </div>
 
-        <hr class="my-4">
-        <h5>Đánh giá sản phẩm</h5>
-        <p class="text-muted">Phần đánh giá do Quỳnh làm sẽ được nhúng vào đây.</p>
-
-        <hr class="my-4">
-        <h5>Sản phẩm liên quan</h5>
-        <div class="row">
-            <div class="col-6 col-md-3 mb-3" th:each="i : ${#numbers.sequence(1, 4)}">
-                <div class="card h-100">
-                    <div class="card-body">
-                        <a th:href="@{/product/{n}(n=${id + i})}" class="stretched-link text-decoration-none"
-                           th:text="'Sản phẩm mẫu ' + ${id + i}"></a>
-                    </div>
-                </div>
-            </div>
-        </div>
     </div>
 </body>
 </html>

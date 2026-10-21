@@ -76,7 +76,7 @@ public class ShopController {
         Shop shop = shopRepository.findByIdAndStatus(id, ShopStatus.ACTIVE)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy shop."));
         model.addAttribute("shop", shop);
-        model.addAttribute("products", productRepository.findByShopIdAndActiveTrue(id, PageRequest.of(0, 12)));
+        model.addAttribute("products", productRepository.findByShopIdAndActiveTrue(id, PageRequest.of(0, 24)));
         return "web/shop";
     }
 

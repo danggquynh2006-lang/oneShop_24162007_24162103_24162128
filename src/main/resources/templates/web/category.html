@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head><title th:text="${category.name} + ' - OneShop'">Danh mục</title></head>
+<body>
+<main class="container my-4">
+    <a th:href="@{/}">← Trang chủ</a>
+    <h2 class="my-3" th:text="${category.name}"></h2>
+    <div class="row g-3">
+        <div class="col-6 col-md-3" th:each="product : ${products}">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5><a th:href="@{/product/{id}(id=${product.id})}" th:text="${product.name}"></a></h5>
+                    <p th:text="${product.brand}"></p>
+                    <strong class="text-danger" th:text="${#numbers.formatDecimal(product.price,0,'POINT',0,'COMMA')} + ' đ'"></strong>
+                </div>
+            </div>
+        </div>
+    </div>
+    <p th:if="${products.empty}">Danh mục chưa có sản phẩm.</p>
+</main>
+</body>
+</html>

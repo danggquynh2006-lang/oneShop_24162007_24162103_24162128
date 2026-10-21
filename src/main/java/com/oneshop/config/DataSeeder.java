@@ -66,12 +66,23 @@ public class DataSeeder implements CommandLineRunner {
 
     private void seedCategories() {
         if (categoryRepository.count() > 0) {
+            categoryRepository.findFirstByNameIgnoreCaseAndParentIsNull("Trang điểm")
+                    .ifPresent(parent -> {
+                        addChildIfMissing(parent, "Má hồng");
+                        addChildIfMissing(parent, "Bảng mắt");
+                    });
             return;
         }
         addCategory("Chăm sóc da", "Sữa rửa mặt", "Toner", "Serum", "Kem dưỡng", "Kem chống nắng");
-        addCategory("Trang điểm", "Son môi", "Kem nền", "Phấn mắt", "Mascara");
+        addCategory("Trang điểm", "Son môi", "Kem nền", "Phấn mắt", "Mascara", "Má hồng", "Bảng mắt");
         addCategory("Chăm sóc tóc", "Dầu gội", "Dầu xả", "Dưỡng tóc");
         addCategory("Nước hoa");
+    }
+
+    private void addChildIfMissing(Category parent, String name) {
+        if (categoryRepository.findFirstByNameIgnoreCaseAndParentId(name, parent.getId()).isEmpty()) {
+            categoryRepository.save(Category.builder().name(name).parent(parent).build());
+        }
     }
 
     private void addCategory(String parentName, String... childNames) {

@@ -12,6 +12,8 @@ mvn '-Dspring-boot.run.profiles=demo' spring-boot:run
 
 Mở `http://localhost:8080/login`. Tài khoản mẫu `vendor@oneshop.com`, `admin@oneshop.com`, `user@oneshop.com`; mật khẩu demo chung `Oneshop@123`. Cơ sở dữ liệu H2 nằm trong bộ nhớ và được tạo lại khi khởi động. Chế độ thường không tự tạo tài khoản demo.
 
+Shop mẫu `/shops/1` có thêm 18 sản phẩm high-end: 6 má hồng, 6 son môi và 6 bảng mắt. Có thể mở từng loại từ menu danh mục ở trang chủ và xem thông tin thật ở trang chi tiết sản phẩm. Tên dòng sản phẩm/màu dựa trên trang hãng [Dior](https://www.dior.com/en_us/beauty/products/dior-backstage-rosy-glow-E000000576.html), [Chanel](https://www.chanel.com/fr/maquillage/p/164308/les-4-ombres-ombre-a-paupieres-effets-multiples/), [NARS](https://www.narscosmetics.com/USA/orgasm-afterglow-liquid-blush/0194251132020.html), [Gucci](https://www.gucci.com/uk/en_gb/pr/beauty/beauty-makeup/25-goldie-red-rouge-a-levres-mat-lipstick-p-6112349PL129250), [Tom Ford](https://www.tomfordbeauty.com/products/lip-color) và [Pat McGrath Labs](https://www.patmcgrath.com/products/mothership-x-moonlit-seduction). Giá và tồn kho trong H2 **chỉ là dữ liệu minh họa**, không phải báo giá hoặc hàng sẵn có ngoài đời. Sản phẩm demo không có ảnh hãng vì chưa có quyền sử dụng ảnh; người bán có thể tải ảnh hợp lệ qua `/vendor/products`.
+
 ### Chạy với SQL Server
 
 Sao chép `src/main/resources/application-example.properties` thành `application.properties` rồi điền kết nối SQL Server, JWT secret ít nhất 32 ký tự, Cloudinary và mail. File thật đã được `.gitignore` bỏ qua. Không đưa khóa thật vào GitHub.
