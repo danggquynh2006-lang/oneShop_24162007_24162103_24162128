@@ -50,7 +50,8 @@ public class CartService {
         }
         Product product = productRepo.findById(productId)
                 .orElseThrow(() -> new IllegalArgumentException("Sản phẩm không tồn tại"));
-        if (!product.isActive() || product.getShop().getStatus() != ShopStatus.ACTIVE) {
+        if (!product.isActive() || product.isLocked()
+                || product.getShop().getStatus() != ShopStatus.ACTIVE) {
             throw new IllegalStateException("Sản phẩm hiện không còn được bán");
         }
         if (product.getShop().getOwner().getId().equals(user.getId())) {
