@@ -77,8 +77,12 @@ public class VendorProductController {
     }
 
     @PostMapping("/{id}/toggle")
-    public String toggle(@PathVariable Long id) {
-        productService.toggle(shopId(), id);
+    public String toggle(@PathVariable Long id, RedirectAttributes redirect) {
+        try {
+            productService.toggle(shopId(), id);
+        } catch (BusinessException exception) {
+            redirect.addAttribute("error", exception.getMessage());
+        }
         return "redirect:/vendor/products";
     }
 

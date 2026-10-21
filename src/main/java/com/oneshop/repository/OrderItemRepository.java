@@ -17,4 +17,7 @@ public interface OrderItemRepository extends JpaRepository<OrderItem, Long> {
             + "and oi.order.status = :status order by oi.id")
     List<OrderItem> findPurchased(@Param("userId") Long userId, @Param("productId") Long productId,
                                   @Param("status") OrderStatus status);
+
+    /** Sản phẩm đã từng nằm trong đơn hàng nào chưa (dùng khi Admin xóa sản phẩm). */
+    boolean existsByProductId(Long productId);
 }

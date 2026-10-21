@@ -35,7 +35,19 @@ public class Product {
     private String brand;
     @Builder.Default
     private boolean active = true;
+
+    /**
+     * Admin/Manager khóa sản phẩm. Khi khóa thì active = false và Vendor không bật lại được.
+     * Dùng Boolean để dữ liệu cũ (null) vẫn hợp lệ, hiểu là chưa khóa.
+     */
+    @Builder.Default
+    private Boolean locked = false;
+
     private LocalDateTime createdAt;
+
+    public boolean isLocked() {
+        return Boolean.TRUE.equals(locked);
+    }
 
     @PrePersist
     void onCreate() {
