@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Khuyến mãi toàn sàn</title>
+</head>
+<body>
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card shadow-sm">
+            <div class="card-body p-4">
+                <h4 class="mb-1" th:text="${formTitle}"></h4>
+                <p class="text-muted">Mã toàn sàn áp dụng cho đơn hàng của mọi shop.</p>
+                <div class="alert alert-danger" th:if="${formError}" th:text="${formError}"></div>
+
+                <form th:action="@{${formAction}}" th:object="${form}" method="post" novalidate>
+                    <div class="row">
+                        <div class="col-md-5 mb-3">
+                            <label class="form-label">Mã giảm giá</label>
+                            <input type="text" class="form-control text-uppercase" th:field="*{code}"
+                                   th:readonly="${current != null}"
+                                   th:classappend="${#fields.hasErrors('code')} ? 'is-invalid'">
+                            <div class="invalid-feedback" th:errors="*{code}"></div>
+                            <div class="form-text" th:if="${current != null}">Không đổi được mã sau khi tạo.</div>
+                        </div>
+                        <div class="col-md-7 mb-3">
+                            <label class="form-label">Tên chương trình</label>
+                            <input type="text" class="form-control" th:field="*{name}"
+                                   th:classappend="${#fields.hasErrors('name')} ? 'is-invalid'">
+                            <div class="invalid-feedback" th:errors="*{name}"></div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Loại khuyến mãi</label>
+                            <select class="form-select" th:field="*{type}"
+                                    th:classappend="${#fields.hasErrors('type')} ? 'is-invalid'">
+                                <option value="">-- Chọn loại --</option>
+                                <option th:value="'PERCENT_PRODUCT'">Giảm % tiền hàng</option>
+                                <option th:value="'SHIPPING_DISCOUNT'">Giảm phí vận chuyển</option>
+                            </select>
+                            <div class="invalid-feedback" th:errors="*{type}"></div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Giá trị giảm (% hoặc VND)</label>
+                            <input type="number" min="0" step="0.01" class="form-control" th:field="*{value}"
+                                   th:classappend="${#fields.hasErrors('value')} ? 'is-invalid'">
+                            <div class="invalid-feedback" th:errors="*{value}"></div>
+                            <div class="form-text">Giảm %: nhập số % (ví dụ 10). Giảm phí ship: nhập số tiền VND.</div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Đơn tối thiểu (VND)</label>
+                            <input type="number" min="0" step="1" class="form-control" th:field="*{minOrder}"
+                                   th:classappend="${#fields.hasErrors('minOrder')} ? 'is-invalid'">
+                            <div class="invalid-feedback" th:errors="*{minOrder}"></div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Giảm tối đa (VND, chỉ loại %)</label>
+                            <input type="number" min="0" step="1" class="form-control" th:field="*{maxDiscount}"
+                                   th:classappend="${#fields.hasErrors('maxDiscount')} ? 'is-invalid'">
+                            <div class="invalid-feedback" th:errors="*{maxDiscount}"></div>
+                            <div class="form-text">Để trống nếu không giới hạn.</div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Bắt đầu</label>
+                            <input type="datetime-local" class="form-control" th:field="*{startAt}"
+                                   th:classappend="${#fields.hasErrors('startAt')} ? 'is-invalid'">
+                            <div class="invalid-feedback" th:errors="*{startAt}"></div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Kết thúc</label>
+                            <input type="datetime-local" class="form-control" th:field="*{endAt}"
+                                   th:classappend="${#fields.hasErrors('endAt')} ? 'is-invalid'">
+                            <div class="invalid-feedback" th:errors="*{endAt}"></div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Số lượng mã</label>
+                            <input type="number" min="1" step="1" class="form-control" th:field="*{quantity}"
+                                   th:classappend="${#fields.hasErrors('quantity')} ? 'is-invalid'">
+                            <div class="invalid-feedback" th:errors="*{quantity}"></div>
+                        </div>
+                    </div>
+
+                    <div class="form-check mb-3">
+                        <input type="checkbox" class="form-check-input" id="active" th:field="*{active}">
+                        <label class="form-check-label" for="active">Bật khuyến mãi</label>
+                    </div>
+
+                    <button type="submit" class="btn btn-danger">Lưu khuyến mãi</button>
+                    <a th:href="@{/admin/promotions}" class="btn btn-outline-secondary">Quay lại</a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
