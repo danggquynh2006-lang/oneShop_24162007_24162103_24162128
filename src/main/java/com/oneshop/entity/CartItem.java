@@ -1,31 +1,25 @@
 package com.oneshop.entity;
 
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 import jakarta.persistence.*;
 import lombok.*;
 
 @Entity
-@Table(name = "carts")
+@Table(name = "cart_items",
+       uniqueConstraints = @UniqueConstraint(columnNames = {"cart_id", "product_id"}))
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
-public class Cart {
+public class CartItem {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @OneToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "user_id", nullable = false, unique = true)
-    private User user;
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "cart_id", nullable = false)
+    private Cart cart;
 
-    @OneToMany(mappedBy = "cart", cascade = CascadeType.ALL, orphanRemoval = true)
-    @Builder.Default
-    private List<CartItem> items = new ArrayList<>();
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "product_id", nullable = false)
+    private Product product;
 
-    private LocalDateTime createdAt;
-
-    @PrePersist
-    void onCreate() {
-        if (createdAt == null) createdAt = LocalDateTime.now();
-    }
+    @Column(nullable = false)
+    private int quantity;
 }

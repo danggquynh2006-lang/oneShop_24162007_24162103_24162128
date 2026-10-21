@@ -6,38 +6,67 @@
 <body>
     <div class="container my-4">
         <h3 class="mb-4">Giỏ hàng của bạn</h3>
+        <div id="msg"></div>
 
-        <div class="card mb-4" th:each="g : ${groups}">
+        <div th:if="${groups.isEmpty()}" class="alert alert-info">
+            Giỏ hàng đang trống. <a th:href="@{/}">Tiếp tục mua sắm</a>
+        </div>
+
+        <div class="card mb-4 shop-card" th:each="g : ${groups}">
             <div class="card-header fw-bold" th:text="${g.shopName}"></div>
             <div class="card-body">
                 <div class="row align-items-center mb-3 cart-line" th:each="l : ${g.lines}"
-                     th:attr="data-price=${l.price}">
+                     th:attr="data-item-id=${l.itemId}, data-price=${l.price.longValue()}">
                     <div class="col-1">
                         <input type="checkbox" class="form-check-input line-check" checked>
                     </div>
-                    <div class="col-4" th:text="${l.name}"></div>
+                    <div class="col-4">
+                        <a th:href="@{/product/{id}(id=${l.productId})}" class="text-decoration-none"
+                           th:text="${l.name}"></a>
+                        <div class="small text-muted" th:text="'Còn ' + ${l.stock} + ' sản phẩm'"></div>
+                    </div>
                     <div class="col-2 text-danger fw-bold"
                          th:text="${#numbers.formatInteger(l.price, 0, 'POINT')} + ' đ'"></div>
                     <div class="col-2">
                         <input type="number" class="form-control form-control-sm line-qty"
-                               th:value="${l.quantity}" min="1">
+                               th:value="${l.quantity}" min="1" th:max="${l.stock}"
+                               th:attr="data-prev=${l.quantity}">
                     </div>
                     <div class="col-2 fw-bold line-total"></div>
                     <div class="col-1 text-end">
-                        <button class="btn btn-sm btn-outline-secondary" type="button">Xóa</button>
+                        <button class="btn btn-sm btn-outline-secondary btn-remove" type="button">Xóa</button>
                     </div>
                 </div>
             </div>
         </div>
 
-        <div class="d-flex justify-content-between align-items-center">
+        <div class="d-flex justify-content-between align-items-center" th:if="${!groups.isEmpty()}">
             <div class="fs-5">Tổng tiền: <span id="grand-total" class="text-danger fw-bold">0 đ</span></div>
-            <a th:href="@{/user/checkout}" class="btn btn-danger">Thanh toán</a>
+            <button id="btn-checkout" type="button" class="btn btn-danger">Thanh toán</button>
         </div>
     </div>
 
     <script>
         function fmt(n) { return n.toLocaleString('vi-VN') + ' đ'; }
+
+        function showMsg(text) {
+            const box = document.getElementById('msg');
+            box.innerHTML = '';
+            const d = document.createElement('div');
+            d.className = 'alert alert-danger';
+            d.textContent = text;
+            box.appendChild(d);
+        }
+
+        async function post(url, data) {
+            const res = await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: new URLSearchParams(data)
+            });
+            if (res.status === 401) { window.location.href = '/login'; return null; }
+            return res.json();
+        }
 
         function recalc() {
             let grand = 0;
@@ -48,13 +77,54 @@
                 row.querySelector('.line-total').textContent = fmt(lineTotal);
                 if (row.querySelector('.line-check').checked) grand += lineTotal;
             });
-            document.getElementById('grand-total').textContent = fmt(grand);
+            const total = document.getElementById('grand-total');
+            if (total) total.textContent = fmt(grand);
         }
 
-        document.querySelectorAll('.line-qty, .line-check').forEach(function (el) {
-            el.addEventListener('input', recalc);
-            el.addEventListener('change', recalc);
+        document.querySelectorAll('.cart-line').forEach(function (row) {
+            const qtyInput = row.querySelector('.line-qty');
+            const itemId = row.dataset.itemId;
+
+            row.querySelector('.line-check').addEventListener('change', recalc);
+
+            qtyInput.addEventListener('change', async function () {
+                const qty = parseInt(qtyInput.value, 10) || 1;
+                const data = await post('/api/cart/update', { itemId: itemId, quantity: qty });
+                if (!data) return;
+                if (data.ok) {
+                    qtyInput.dataset.prev = qty;
+                    document.getElementById('msg').innerHTML = '';
+                } else {
+                    showMsg(data.message);
+                    qtyInput.value = qtyInput.dataset.prev;
+                }
+                recalc();
+            });
+
+            row.querySelector('.btn-remove').addEventListener('click', async function () {
+                const data = await post('/api/cart/remove', { itemId: itemId });
+                if (!data) return;
+                if (!data.ok) { showMsg(data.message); return; }
+                const card = row.closest('.shop-card');
+                row.remove();
+                if (card.querySelectorAll('.cart-line').length === 0) card.remove();
+                if (document.querySelectorAll('.cart-line').length === 0) { window.location.reload(); return; }
+                recalc();
+            });
         });
+
+        const btnCheckout = document.getElementById('btn-checkout');
+        if (btnCheckout) {
+            btnCheckout.addEventListener('click', function () {
+                const ids = [];
+                document.querySelectorAll('.cart-line').forEach(function (row) {
+                    if (row.querySelector('.line-check').checked) ids.push(row.dataset.itemId);
+                });
+                if (ids.length === 0) { showMsg('Hãy chọn ít nhất một sản phẩm để thanh toán'); return; }
+                window.location.href = '/user/checkout?items=' + ids.join(',');
+            });
+        }
+
         recalc();
     </script>
 </body>
