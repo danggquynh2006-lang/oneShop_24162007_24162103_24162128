@@ -18,14 +18,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title><sitemesh:write property="title"/> | OneShop</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600&family=Playfair+Display:wght@500;600&family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="/css/oneshop.css" rel="stylesheet">
     <sitemesh:write property="head"/>
 </head>
 <body class="d-flex flex-column min-vh-100">
-    <nav class="navbar navbar-expand-lg bg-white shadow-sm">
+    <nav class="navbar navbar-expand-lg os-navbar sticky-top">
         <div class="container">
-            <a class="navbar-brand fw-bold text-danger" href="/">OneShop</a>
+            <a class="navbar-brand os-brand" href="/">OneShop</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
                     data-bs-target="#mainNav" aria-controls="mainNav" aria-expanded="false"
                     aria-label="Mở menu">
@@ -33,25 +37,27 @@
             </button>
 
             <div class="collapse navbar-collapse" id="mainNav">
-                <form class="d-flex flex-grow-1 my-2 my-lg-0 mx-lg-4" action="/search" method="get" role="search">
-                    <input class="form-control" type="search" name="keyword"
-                           placeholder="Tìm sản phẩm..." aria-label="Tìm kiếm sản phẩm">
-                    <button class="btn btn-danger ms-2" type="submit" aria-label="Tìm">
-                        <i class="bi bi-search"></i>
-                    </button>
+                <form class="os-search flex-grow-1 my-2 my-lg-0 mx-lg-4" action="/search" method="get" role="search">
+                    <div class="input-group">
+                        <input class="form-control" type="search" name="keyword"
+                               placeholder="Tìm son, kem dưỡng, serum..." aria-label="Tìm kiếm sản phẩm">
+                        <button class="btn btn-danger" type="submit" aria-label="Tìm">
+                            <i class="bi bi-search"></i>
+                        </button>
+                    </div>
                 </form>
 
-                <ul class="navbar-nav align-items-lg-center gap-lg-3">
+                <ul class="navbar-nav align-items-lg-center gap-lg-2">
                     <% if (!loggedIn || isCustomer) { %>
                     <li class="nav-item">
-                        <a class="nav-link text-dark" href="/cart"><i class="bi bi-cart3"></i> Giỏ hàng</a>
+                        <a class="nav-link" href="/cart"><i class="bi bi-bag-heart"></i> Giỏ hàng</a>
                     </li>
                     <% } %>
                     <% if (loggedIn) { %>
                     <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle text-dark" href="#" role="button"
+                        <a class="nav-link dropdown-toggle" href="#" role="button"
                            data-bs-toggle="dropdown" aria-expanded="false">
-                            <i class="bi bi-person"></i>
+                            <i class="bi bi-person-heart"></i>
                             <%= HtmlUtils.htmlEscape(request.getUserPrincipal().getName()) %>
                             <% if (!roleLabel.isEmpty()) { %>
                             <span class="badge bg-danger ms-1"><%= roleLabel %></span>
@@ -92,7 +98,7 @@
                     </li>
                     <% } else { %>
                     <li class="nav-item">
-                        <a class="nav-link text-dark" href="/login"><i class="bi bi-person"></i> Đăng nhập</a>
+                        <a class="nav-link" href="/login"><i class="bi bi-person"></i> Đăng nhập</a>
                     </li>
                     <li class="nav-item">
                         <a class="btn btn-outline-danger btn-sm" href="/register">Đăng ký</a>
@@ -102,10 +108,63 @@
             </div>
         </div>
     </nav>
+
     <main class="container my-4 flex-grow-1">
         <sitemesh:write property="body"/>
     </main>
-    <footer class="bg-dark text-white-50 py-3 text-center">&copy; 2026 OneShop</footer>
+
+    <footer class="os-footer mt-auto">
+        <div class="container py-5">
+            <div class="row g-4">
+                <div class="col-md-4">
+                    <div class="os-brand mb-2">OneShop</div>
+                    <p class="mb-3">Tìm và tỏa sáng với vẻ đẹp của riêng bạn.</p>
+                    <div class="d-flex gap-3 fs-5">
+                        <a href="#" aria-label="Facebook"><i class="bi bi-facebook"></i></a>
+                        <a href="#" aria-label="Instagram"><i class="bi bi-instagram"></i></a>
+                        <a href="#" aria-label="TikTok"><i class="bi bi-tiktok"></i></a>
+                        <a href="#" aria-label="YouTube"><i class="bi bi-youtube"></i></a>
+                    </div>
+                </div>
+                <div class="col-6 col-md-2">
+                    <h6>Mua sắm</h6>
+                    <ul>
+                        <li><a href="/">Trang chủ</a></li>
+                        <li><a href="/cart">Giỏ hàng</a></li>
+                        <li><a href="/user/orders">Đơn hàng của tôi</a></li>
+                        <li><a href="/user/favorites">Yêu thích</a></li>
+                    </ul>
+                </div>
+                <div class="col-6 col-md-3">
+                    <h6>Tài khoản</h6>
+                    <ul>
+                        <li><a href="/user/profile">Tài khoản của tôi</a></li>
+                        <li><a href="/user/addresses">Địa chỉ nhận hàng</a></li>
+                        <li><a href="/shop/register">Đăng ký bán hàng cùng OneShop</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-3">
+                    <h6>Liên hệ</h6>
+                    <ul>
+                        <li><i class="bi bi-envelope-heart"></i> hello@oneshop.vn</li>
+                        <li><i class="bi bi-telephone"></i> 1900 0000</li>
+                        <li><i class="bi bi-geo-alt"></i> TP. Hồ Chí Minh</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="os-footer-bottom">
+            <div class="container py-3">
+                <div class="row">
+                    <div class="col-md-6">&copy; 2026 OneShop. Đồ án môn Lập trình Web.</div>
+                    <div class="col-md-6 text-md-end">
+                        Giao diện dựa trên template Aura, HTML Template by:
+                        <a href="https://templatesjungle.com/" target="_blank" rel="noopener">TemplatesJungle</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
