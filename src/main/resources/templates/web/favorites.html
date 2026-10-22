@@ -12,7 +12,7 @@
         </div>
 
         <div class="row">
-            <div class="col-6 col-md-3 mb-4" th:each="p : ${items}">
+            <div class="col-6 col-md-3 mb-4 fav-card" th:each="p : ${items}">
                 <div class="card h-100">
                     <div class="card-body">
                         <h6 class="card-title">
@@ -24,11 +24,29 @@
                         <small class="text-muted" th:text="${p.note}"></small>
                     </div>
                     <div class="card-footer text-end">
-                        <button class="btn btn-sm btn-outline-secondary" type="button">Bỏ yêu thích</button>
+                        <button class="btn btn-sm btn-outline-secondary btn-unfav" type="button"
+                                th:attr="data-product-id=${p.id}">Bỏ yêu thích</button>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+
+    <script>
+        document.querySelectorAll('.btn-unfav').forEach(function (btn) {
+            btn.addEventListener('click', async function () {
+                const res = await fetch('/api/favorites/toggle', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: new URLSearchParams({ productId: btn.dataset.productId })
+                });
+                if (res.status === 401) { window.location.href = '/login'; return; }
+                const data = await res.json();
+                if (!data.ok) { alert(data.message); return; }
+                btn.closest('.fav-card').remove();
+                if (!document.querySelector('.fav-card')) window.location.reload();
+            });
+        });
+    </script>
 </body>
 </html>
