@@ -1,16 +1,15 @@
 package com.oneshop.home;
 
 import java.security.Principal;
-import java.util.List;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
-
+import org.springframework.web.server.ResponseStatusException;
 import com.oneshop.auth.SecurityUtil;
 import com.oneshop.user.ReviewService;
-
 import lombok.RequiredArgsConstructor;
 
 @Controller
@@ -18,30 +17,31 @@ import lombok.RequiredArgsConstructor;
 public class HomeController {
 
     private final HomeCategoryService categoryService;
+    private final HomeProductService productService;
     private final ReviewService reviewService;
 
-    public record Suggestion(Long id, String name, long price) {}
-
     @GetMapping("/")
-    public String home(Principal principal, Model model) {
+    public String home(Principal principal,
+                       @RequestParam(defaultValue = "0") int page, Model model) {
         var tree = categoryService.activeTree();
 
         model.addAttribute("categories", tree);
         model.addAttribute("loggedIn", principal != null);
         model.addAttribute("featured", tree.stream().limit(4).toList());
-
-        model.addAttribute("suggestions", List.of(
-                new Suggestion(11L, "Sữa rửa mặt dịu nhẹ", 95000),
-                new Suggestion(12L, "Kem dưỡng ẩm ban đêm", 320000),
-                new Suggestion(13L, "Son môi lì", 180000),
-                new Suggestion(14L, "Dầu gội thảo mộc", 120000)));
+        model.addAttribute("products", productService.bestSellers(page));
+        model.addAttribute("suggestions", productService.suggestions());
         return "web/home";
     }
 
     @GetMapping("/product/{id}")
     public String productDetail(@PathVariable Long id,
                                 @RequestParam(defaultValue = "0") int reviewPage, Model model) {
+        var product = productService.detail(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+
         model.addAttribute("id", id);
+        model.addAttribute("product", product);
+        model.addAttribute("related", productService.related(product));
         model.addAttribute("reviewSection",
                 reviewService.section(id, SecurityUtil.getCurrentUser(), reviewPage));
         return "web/product-detail";

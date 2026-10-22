@@ -5,79 +5,103 @@
 </head>
 <body>
     <div class="container my-4">
-    <div th:if="${loggedIn}" class="rounded p-5 mb-4 text-white"
-	     style="background: linear-gradient(135deg, #dc3545, #fd7e14);">
-	    <h2 class="fw-bold">Chào mừng bạn quay lại OneShop</h2>
-	    <p class="mb-3">Khám phá sản phẩm làm đẹp với giá tốt mỗi ngày.</p>
-	    <a th:href="@{/top20}" class="btn btn-light">Xem Top 20</a>
-	</div>
-    <div class="mb-4">
-    <div th:if="${loggedIn}" class="mb-4">
-	    <h5 class="mb-3">Danh mục nổi bật</h5>
-	    <div class="row g-3">
-	        <div class="col-6 col-md-3" th:each="c : ${featured}">
-	            <a th:href="@{/category/{id}(id=${c.id})}" class="card text-decoration-none text-center h-100">
-	                <div class="card-body">
-	                    <div class="fw-bold" th:text="${c.name}"></div>
-	                    <small class="text-muted" th:text="${c.children.size()} + ' danh mục con'"></small>
-	                </div>
-	            </a>
-	        </div>
-	    </div>
-	</div>
-	    <h5 class="mb-3">Danh mục</h5>
-	    <div class="d-flex flex-wrap gap-2">
-	        <div class="dropdown" th:each="c : ${categories}">
-	            <a class="btn btn-outline-danger dropdown-toggle"
-	               th:if="${!c.children.isEmpty()}"
-	               href="#" role="button" data-bs-toggle="dropdown" th:text="${c.name}"></a>
-	            <ul class="dropdown-menu" th:if="${!c.children.isEmpty()}">
-	                <li><a class="dropdown-item fw-bold"
-	                       th:href="@{/category/{id}(id=${c.id})}" th:text="'Tất cả ' + ${c.name}"></a></li>
-	                <li th:each="s : ${c.children}">
-	                    <a class="dropdown-item" th:href="@{/category/{id}(id=${s.id})}" th:text="${s.name}"></a>
-	                </li>
-	            </ul>
-	            <a class="btn btn-outline-danger" th:if="${c.children.isEmpty()}"
-	               th:href="@{/category/{id}(id=${c.id})}" th:text="${c.name}"></a>
-	        </div>
-	    </div>
-	</div>
+
+        <div th:if="${loggedIn}" class="rounded p-5 mb-4 text-white"
+             style="background: linear-gradient(135deg, #dc3545, #fd7e14);">
+            <h2 class="fw-bold">Chào mừng bạn quay lại OneShop</h2>
+            <p class="mb-3">Khám phá sản phẩm làm đẹp với giá tốt mỗi ngày.</p>
+            <a th:href="@{/top20}" class="btn btn-light">Xem Top 20</a>
+        </div>
+
+        <div th:if="${loggedIn}" class="mb-4">
+            <h5 class="mb-3">Danh mục nổi bật</h5>
+            <div class="row g-3">
+                <div class="col-6 col-md-3" th:each="c : ${featured}">
+                    <a th:href="@{/category/{id}(id=${c.id})}" class="card text-decoration-none text-center h-100">
+                        <div class="card-body">
+                            <div class="fw-bold" th:text="${c.name}"></div>
+                            <small class="text-muted" th:text="${c.children.size()} + ' danh mục con'"></small>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="mb-4">
+            <h5 class="mb-3">Danh mục</h5>
+            <div class="d-flex flex-wrap gap-2">
+                <div class="dropdown" th:each="c : ${categories}">
+                    <a class="btn btn-outline-danger dropdown-toggle"
+                       th:if="${!c.children.isEmpty()}"
+                       href="#" role="button" data-bs-toggle="dropdown" th:text="${c.name}"></a>
+                    <ul class="dropdown-menu" th:if="${!c.children.isEmpty()}">
+                        <li><a class="dropdown-item fw-bold"
+                               th:href="@{/category/{id}(id=${c.id})}" th:text="'Tất cả ' + ${c.name}"></a></li>
+                        <li th:each="s : ${c.children}">
+                            <a class="dropdown-item" th:href="@{/category/{id}(id=${s.id})}" th:text="${s.name}"></a>
+                        </li>
+                    </ul>
+                    <a class="btn btn-outline-danger" th:if="${c.children.isEmpty()}"
+                       th:href="@{/category/{id}(id=${c.id})}" th:text="${c.name}"></a>
+                </div>
+            </div>
+        </div>
+
         <div class="d-flex justify-content-between align-items-center mb-4">
-		    <h3 class="mb-0">Sản phẩm bán chạy</h3>
-		    <a th:href="@{/top20}" class="btn btn-sm btn-outline-danger">Xem Top 20</a>
-		</div>
+            <h3 class="mb-0">Sản phẩm bán chạy</h3>
+            <a th:href="@{/top20}" class="btn btn-sm btn-outline-danger">Xem Top 20</a>
+        </div>
+
+        <p th:if="${products.empty}" class="text-muted">Chưa có sản phẩm nào đạt điều kiện hiển thị.</p>
+
         <div class="row">
-            <div class="col-6 col-md-3 mb-4" th:each="i : ${#numbers.sequence(1, 8)}">
+            <div class="col-6 col-md-3 mb-4" th:each="p : ${products.content}">
                 <div class="card h-100">
                     <div class="card-body">
                         <h6 class="card-title">
-						    <a th:href="@{/product/{id}(id=${i})}" class="stretched-link text-decoration-none"
-						       th:text="'Sản phẩm mẫu ' + ${i}"></a>
-						</h6>
-                        <div class="text-danger fw-bold">199.000 đ</div>
-                        <small class="text-muted">Đã bán 25</small>
+                            <a th:href="@{/product/{id}(id=${p.id})}" class="stretched-link text-decoration-none"
+                               th:text="${p.name}"></a>
+                        </h6>
+                        <div class="text-danger fw-bold"
+                             th:text="${#numbers.formatInteger(p.price, 0, 'POINT')} + ' đ'"></div>
+                        <small class="text-muted" th:text="'Đã bán ' + ${p.sold}"></small>
                     </div>
                 </div>
             </div>
         </div>
-        <div th:if="${loggedIn}" class="mt-5">
-		    <h3 class="mb-4">Gợi ý cho bạn</h3>
-		    <div class="row">
-		        <div class="col-6 col-md-3 mb-4" th:each="s : ${suggestions}">
-		            <div class="card h-100">
-		                <div class="card-body">
-		                    <h6 class="card-title">
-		                        <a th:href="@{/product/{id}(id=${s.id})}" class="stretched-link text-decoration-none"
-		                           th:text="${s.name}"></a>
-		                    </h6>
-		                    <div class="text-danger fw-bold"
-		                         th:text="${#numbers.formatInteger(s.price, 0, 'POINT')} + ' đ'"></div>
-		                </div>
-		            </div>
-		        </div>
-		    </div>
-		</div>
+
+        <nav th:if="${products.totalPages > 1}">
+            <ul class="pagination">
+                <li class="page-item" th:classappend="${products.first} ? 'disabled'">
+                    <a class="page-link" th:href="@{/(page=${products.number - 1})}">Trước</a>
+                </li>
+                <li class="page-item" th:each="i : ${#numbers.sequence(0, products.totalPages - 1)}"
+                    th:classappend="${i == products.number} ? 'active'">
+                    <a class="page-link" th:href="@{/(page=${i})}" th:text="${i + 1}"></a>
+                </li>
+                <li class="page-item" th:classappend="${products.last} ? 'disabled'">
+                    <a class="page-link" th:href="@{/(page=${products.number + 1})}">Sau</a>
+                </li>
+            </ul>
+        </nav>
+
+        <div th:if="${loggedIn and !suggestions.empty}" class="mt-5">
+            <h3 class="mb-4">Gợi ý cho bạn</h3>
+            <div class="row">
+                <div class="col-6 col-md-3 mb-4" th:each="s : ${suggestions}">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <h6 class="card-title">
+                                <a th:href="@{/product/{id}(id=${s.id})}" class="stretched-link text-decoration-none"
+                                   th:text="${s.name}"></a>
+                            </h6>
+                            <div class="text-danger fw-bold"
+                                 th:text="${#numbers.formatInteger(s.price, 0, 'POINT')} + ' đ'"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </body>
 </html>
