@@ -1,4 +1,16 @@
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
+<%!
+    /** Trả về class tô sáng nếu đường dẫn hiện tại bắt đầu bằng prefix. */
+    private String active(String uri, String prefix) {
+        return uri != null && uri.startsWith(prefix) ? " bg-danger rounded" : "";
+    }
+%>
+<%
+    String uri = (String) request.getAttribute("jakarta.servlet.forward.request_uri");
+    if (uri == null) {
+        uri = request.getRequestURI();
+    }
+%>
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -22,14 +34,15 @@
         <aside class="bg-dark text-white p-3 d-flex flex-column vendor-sidebar" style="width:240px">
             <h5 class="text-danger">OneShop Vendor</h5>
             <ul class="nav flex-column mt-3">
-                <li class="nav-item"><a class="nav-link text-white" href="/vendor/shop"><i class="bi bi-shop"></i> Thông tin shop</a></li>
-                <li class="nav-item"><a class="nav-link text-white" href="/vendor/products"><i class="bi bi-box-seam"></i> Sản phẩm</a></li>
-                <li class="nav-item"><a class="nav-link text-white" href="/vendor/orders"><i class="bi bi-receipt"></i> Đơn hàng</a></li>
-                <li class="nav-item"><a class="nav-link text-white" href="/vendor/promotions"><i class="bi bi-percent"></i> Khuyến mãi</a></li>
-                <li class="nav-item"><a class="nav-link text-white" href="/vendor/revenue"><i class="bi bi-graph-up"></i> Doanh thu</a></li>
-                <li class="nav-item"><a class="nav-link text-white" href="/vendor/reviews"><i class="bi bi-star"></i> Đánh giá</a></li>
+                <li class="nav-item"><a class="nav-link text-white<%= active(uri, "/vendor/shop") %>" href="/vendor/shop"><i class="bi bi-shop"></i> Thông tin shop</a></li>
+                <li class="nav-item"><a class="nav-link text-white<%= active(uri, "/vendor/products") %>" href="/vendor/products"><i class="bi bi-box-seam"></i> Sản phẩm</a></li>
+                <li class="nav-item"><a class="nav-link text-white<%= active(uri, "/vendor/orders") %>" href="/vendor/orders"><i class="bi bi-receipt"></i> Đơn hàng</a></li>
+                <li class="nav-item"><a class="nav-link text-white<%= active(uri, "/vendor/promotions") %>" href="/vendor/promotions"><i class="bi bi-percent"></i> Khuyến mãi</a></li>
+                <li class="nav-item"><a class="nav-link text-white<%= active(uri, "/vendor/revenue") %>" href="/vendor/revenue"><i class="bi bi-graph-up"></i> Doanh thu</a></li>
+                <li class="nav-item"><a class="nav-link text-white<%= active(uri, "/vendor/reviews") %>" href="/vendor/reviews"><i class="bi bi-star"></i> Đánh giá</a></li>
             </ul>
             <div class="mt-auto pt-3 border-top border-secondary small">
+                <a href="/" class="btn btn-outline-light btn-sm w-100 mb-2"><i class="bi bi-house"></i> Về trang chủ</a>
                 <% if (request.getUserPrincipal() != null) { %>
                     <div class="text-white-50 mb-2 text-truncate"><i class="bi bi-person-circle"></i> <%= request.getUserPrincipal().getName() %></div>
                 <% } %>
