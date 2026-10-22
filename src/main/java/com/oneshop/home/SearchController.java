@@ -1,60 +1,58 @@
 package com.oneshop.home;
 
-import java.util.Comparator;
-import java.util.List;
+import java.math.BigDecimal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.util.UriComponentsBuilder;
 import lombok.RequiredArgsConstructor;
 
 @Controller
 @RequiredArgsConstructor
 public class SearchController {
 
+    private final ProductQueryService queryService;
     private final HomeCategoryService categoryService;
-
-    public record Item(Long id, String name, long price, int sold) {}
-
-    private static final List<Item> SAMPLE = List.of(
-            new Item(1L, "Dầu gội thảo mộc", 120000, 50),
-            new Item(2L, "Dầu xả phục hồi tóc", 135000, 32),
-            new Item(3L, "Nước hoa hương gỗ", 650000, 12),
-            new Item(4L, "Son môi lì", 180000, 85),
-            new Item(5L, "Mascara chống trôi", 210000, 40),
-            new Item(6L, "Kem dưỡng ẩm ban đêm", 320000, 27),
-            new Item(7L, "Sữa rửa mặt dịu nhẹ", 95000, 120),
-            new Item(8L, "Phấn mắt 12 màu", 275000, 18));
 
     @GetMapping("/search")
     public String search(@RequestParam(defaultValue = "") String keyword,
                          @RequestParam(required = false) Long categoryId,
-                         @RequestParam(required = false) Long minPrice,
-                         @RequestParam(required = false) Long maxPrice,
+                         @RequestParam(required = false) BigDecimal minPrice,
+                         @RequestParam(required = false) BigDecimal maxPrice,
+                         @RequestParam(required = false) Long shopId,
+                         @RequestParam(required = false) String brand,
+                         @RequestParam(required = false) Double minRating,
                          @RequestParam(defaultValue = "sold") String sort,
+                         @RequestParam(defaultValue = "0") int page,
                          Model model) {
 
-        String kw = keyword.trim().toLowerCase();
+        var filter = new ProductQueryService.Filter(
+                keyword, categoryId, minPrice, maxPrice, shopId, brand, minRating, sort);
 
-        Comparator<Item> order = switch (sort) {
-            case "price_asc" -> Comparator.comparingLong(Item::price);
-            case "price_desc" -> Comparator.comparingLong(Item::price).reversed();
-            default -> Comparator.comparingInt(Item::sold).reversed();
-        };
+        UriComponentsBuilder b = UriComponentsBuilder.fromPath("/search");
+        if (!keyword.isBlank()) b.queryParam("keyword", keyword.trim());
+        if (categoryId != null) b.queryParam("categoryId", categoryId);
+        if (minPrice != null) b.queryParam("minPrice", minPrice.toPlainString());
+        if (maxPrice != null) b.queryParam("maxPrice", maxPrice.toPlainString());
+        if (shopId != null) b.queryParam("shopId", shopId);
+        if (brand != null && !brand.isBlank()) b.queryParam("brand", brand.trim());
+        if (minRating != null) b.queryParam("minRating", minRating);
+        b.queryParam("sort", sort);
+        String pageUrlBase = b.build().encode().toUriString() + "&";
 
-        List<Item> results = SAMPLE.stream()
-                .filter(i -> kw.isEmpty() || i.name().toLowerCase().contains(kw))
-                .filter(i -> minPrice == null || i.price() >= minPrice)
-                .filter(i -> maxPrice == null || i.price() <= maxPrice)
-                .sorted(order)
-                .toList();
-
-        model.addAttribute("results", results);
+        model.addAttribute("products", queryService.search(filter, page));
         model.addAttribute("categories", categoryService.activeTree());
+        model.addAttribute("shops", queryService.shops());
+        model.addAttribute("brands", queryService.brands());
+        model.addAttribute("pageUrlBase", pageUrlBase);
         model.addAttribute("keyword", keyword);
         model.addAttribute("categoryId", categoryId);
         model.addAttribute("minPrice", minPrice);
         model.addAttribute("maxPrice", maxPrice);
+        model.addAttribute("shopId", shopId);
+        model.addAttribute("brand", brand);
+        model.addAttribute("minRating", minRating);
         model.addAttribute("sort", sort);
         return "web/search";
     }

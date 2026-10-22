@@ -25,16 +25,20 @@
 
         <form method="get" th:action="@{/category/{id}(id=${category.id})}"
               class="d-flex justify-content-between align-items-center mb-3">
-            <span class="text-muted">Có <strong th:text="${total}"></strong> sản phẩm</span>
+            <span class="text-muted">Có <strong th:text="${products.totalElements}"></strong> sản phẩm</span>
             <select name="sort" class="form-select w-auto" onchange="this.form.submit()">
                 <option value="sold" th:selected="${sort == 'sold'}">Bán chạy nhất</option>
+                <option value="new" th:selected="${sort == 'new'}">Mới nhất</option>
+                <option value="rating" th:selected="${sort == 'rating'}">Đánh giá cao</option>
                 <option value="price_asc" th:selected="${sort == 'price_asc'}">Giá tăng dần</option>
                 <option value="price_desc" th:selected="${sort == 'price_desc'}">Giá giảm dần</option>
             </select>
         </form>
 
+        <div th:if="${products.empty}" class="alert alert-info">Chưa có sản phẩm nào trong danh mục này.</div>
+
         <div class="row">
-            <div class="col-6 col-md-3 mb-4" th:each="p : ${items}">
+            <div class="col-6 col-md-3 mb-4" th:each="p : ${products.content}">
                 <div class="card h-100">
                     <div class="card-body">
                         <h6 class="card-title">
@@ -49,21 +53,21 @@
             </div>
         </div>
 
-        <nav th:if="${totalPages > 1}">
+        <nav th:if="${products.totalPages > 1}">
             <ul class="pagination">
-                <li class="page-item" th:classappend="${page == 0} ? 'disabled'">
+                <li class="page-item" th:classappend="${products.first} ? 'disabled'">
                     <a class="page-link"
-                       th:href="@{/category/{id}(id=${category.id}, page=${page - 1}, sort=${sort})}">Trước</a>
+                       th:href="@{/category/{id}(id=${category.id}, page=${products.number - 1}, sort=${sort})}">Trước</a>
                 </li>
-                <li class="page-item" th:each="i : ${#numbers.sequence(0, totalPages - 1)}"
-                    th:classappend="${i == page} ? 'active'">
+                <li class="page-item" th:each="i : ${#numbers.sequence(0, products.totalPages - 1)}"
+                    th:classappend="${i == products.number} ? 'active'">
                     <a class="page-link"
                        th:href="@{/category/{id}(id=${category.id}, page=${i}, sort=${sort})}"
                        th:text="${i + 1}"></a>
                 </li>
-                <li class="page-item" th:classappend="${page >= totalPages - 1} ? 'disabled'">
+                <li class="page-item" th:classappend="${products.last} ? 'disabled'">
                     <a class="page-link"
-                       th:href="@{/category/{id}(id=${category.id}, page=${page + 1}, sort=${sort})}">Sau</a>
+                       th:href="@{/category/{id}(id=${category.id}, page=${products.number + 1}, sort=${sort})}">Sau</a>
                 </li>
             </ul>
         </nav>
