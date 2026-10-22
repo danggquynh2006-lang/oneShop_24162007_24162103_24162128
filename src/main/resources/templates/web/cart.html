@@ -7,6 +7,7 @@
     <div class="container my-4">
         <h3 class="mb-4">Giỏ hàng của bạn</h3>
         <div id="msg"></div>
+        <div class="alert alert-danger" th:if="${cartError}" th:text="${cartError}"></div>
 
         <div th:if="${groups.isEmpty()}" class="alert alert-info">
             Giỏ hàng đang trống. <a th:href="@{/}">Tiếp tục mua sắm</a>
