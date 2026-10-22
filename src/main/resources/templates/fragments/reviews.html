@@ -56,7 +56,7 @@
     </div>
 
     <!-- Lý do chưa được đánh giá -->
-    <div class="alert alert-light border" th:if="${!s.canReview and s.note}">
+    <div class="alert alert-light border" th:if="${!s.canReview and s.note != null}">
         <span th:text="${s.note}"></span>
         <a th:if="${!s.loggedIn}" th:href="@{/login}" class="ms-1">Đăng nhập</a>
     </div>
