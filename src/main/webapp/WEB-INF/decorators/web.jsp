@@ -1,5 +1,17 @@
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ page import="org.springframework.web.util.HtmlUtils" %>
+<%
+    boolean loggedIn = request.getUserPrincipal() != null;
+    boolean isAdmin = request.isUserInRole("ADMIN") || request.isUserInRole("MANAGER");
+    boolean isVendor = request.isUserInRole("VENDOR");
+    boolean isShipper = request.isUserInRole("SHIPPER");
+    // Khách hàng mua sắm: user thường hoặc vendor (vendor cũng là khách)
+    boolean isCustomer = loggedIn && !isAdmin && !isShipper;
+    String roleLabel = request.isUserInRole("ADMIN") ? "Admin"
+            : request.isUserInRole("MANAGER") ? "Manager"
+            : isVendor ? "Vendor"
+            : isShipper ? "Shipper" : "";
+%>
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -30,22 +42,44 @@
                 </form>
 
                 <ul class="navbar-nav align-items-lg-center gap-lg-3">
+                    <% if (!loggedIn || isCustomer) { %>
                     <li class="nav-item">
                         <a class="nav-link text-dark" href="/cart"><i class="bi bi-cart3"></i> Giỏ hàng</a>
                     </li>
-                    <% if (request.getUserPrincipal() != null) { %>
+                    <% } %>
+                    <% if (loggedIn) { %>
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle text-dark" href="#" role="button"
                            data-bs-toggle="dropdown" aria-expanded="false">
                             <i class="bi bi-person"></i>
                             <%= HtmlUtils.htmlEscape(request.getUserPrincipal().getName()) %>
+                            <% if (!roleLabel.isEmpty()) { %>
+                            <span class="badge bg-danger ms-1"><%= roleLabel %></span>
+                            <% } %>
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end">
+                            <% if (isAdmin) { %>
+                            <li><a class="dropdown-item fw-semibold" href="/admin/users"><i class="bi bi-speedometer2"></i> Trang quản trị</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <% } %>
+                            <% if (isVendor) { %>
+                            <li><a class="dropdown-item fw-semibold" href="/vendor/shop"><i class="bi bi-shop"></i> Quản lý shop của tôi</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <% } %>
+                            <% if (isShipper) { %>
+                            <li><a class="dropdown-item fw-semibold" href="/shipper/orders"><i class="bi bi-truck"></i> Trang giao hàng</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <% } %>
                             <li><a class="dropdown-item" href="/user/profile"><i class="bi bi-person"></i> Tài khoản của tôi</a></li>
+                            <% if (isCustomer) { %>
                             <li><a class="dropdown-item" href="/user/orders"><i class="bi bi-receipt"></i> Đơn hàng của tôi</a></li>
                             <li><a class="dropdown-item" href="/user/favorites"><i class="bi bi-heart"></i> Yêu thích</a></li>
                             <li><a class="dropdown-item" href="/user/viewed"><i class="bi bi-clock-history"></i> Đã xem</a></li>
                             <li><a class="dropdown-item" href="/user/addresses"><i class="bi bi-geo-alt"></i> Địa chỉ nhận hàng</a></li>
+                            <% } %>
+                            <% if (isCustomer && !isVendor) { %>
+                            <li><a class="dropdown-item" href="/shop/register"><i class="bi bi-shop-window"></i> Đăng ký bán hàng</a></li>
+                            <% } %>
                             <li><hr class="dropdown-divider"></li>
                             <li>
                                 <form action="/logout" method="post" class="m-0">
@@ -59,6 +93,9 @@
                     <% } else { %>
                     <li class="nav-item">
                         <a class="nav-link text-dark" href="/login"><i class="bi bi-person"></i> Đăng nhập</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="btn btn-outline-danger btn-sm" href="/register">Đăng ký</a>
                     </li>
                     <% } %>
                 </ul>
