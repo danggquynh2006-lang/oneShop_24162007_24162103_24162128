@@ -76,6 +76,7 @@
         <div class="row">
             <div class="col-6 col-md-3 mb-4" th:each="p : ${products.content}">
                 <div class="card h-100">
+                <div th:replace="~{web/thumb :: thumb(${p.image}, ${p.name})}"></div>
                     <div class="card-body">
                         <h6 class="card-title">
                             <a th:href="@{/product/{id}(id=${p.id})}" class="stretched-link text-decoration-none"

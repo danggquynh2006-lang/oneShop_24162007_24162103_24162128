@@ -2,6 +2,7 @@ package com.oneshop.home;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
@@ -28,12 +29,14 @@ public class TopProductService {
         public String getLabel() { return label; }
     }
 
-    public record Entry(Long id, String name, BigDecimal price, int sold, double rating, long favorites) {}
+    public record Entry(Long id, String name, BigDecimal price, int sold, double rating,
+                        long favorites, String image) {}
 
     public record TopPage(List<Entry> items, int page, int totalPages) {}
 
     private final HomeProductRepository repo;
     private final FavoriteRepository favoriteRepo;
+    private final ProductImages images;
 
     @Transactional(readOnly = true)
     public TopPage top(Tab tab, int page) {
@@ -49,9 +52,12 @@ public class TopProductService {
         int current = Math.max(0, Math.min(page, totalPages - 1));
         int from = current * PAGE_SIZE;
 
-        List<Entry> items = top.subList(from, Math.min(from + PAGE_SIZE, top.size())).stream()
+        List<Product> pageItems = top.subList(from, Math.min(from + PAGE_SIZE, top.size()));
+        Map<Long, String> imgs = images.mainUrls(pageItems.stream().map(Product::getId).toList());
+
+        List<Entry> items = pageItems.stream()
                 .map(p -> new Entry(p.getId(), p.getName(), p.getPrice(), p.getSold(),
-                        p.getAvgRating(), favoriteRepo.countByProductId(p.getId())))
+                        p.getAvgRating(), favoriteRepo.countByProductId(p.getId()), imgs.get(p.getId())))
                 .toList();
         return new TopPage(items, current, totalPages);
     }

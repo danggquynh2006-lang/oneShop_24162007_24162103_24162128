@@ -18,8 +18,18 @@
 
         <div class="row">
             <div class="col-md-5 mb-4">
-                <div class="border rounded p-5 text-center text-muted">Ảnh sản phẩm</div>
-            </div>
+			    <div th:if="${product.images.isEmpty()}"
+			         class="border rounded p-5 text-center text-muted">Chưa có ảnh sản phẩm</div>
+			    <div th:if="${!product.images.isEmpty()}">
+			        <img id="main-img" th:src="${product.images[0]}" th:alt="${product.name}"
+			             class="img-fluid rounded border w-100" style="max-height:420px; object-fit:contain;">
+			        <div class="d-flex flex-wrap gap-2 mt-2" th:if="${product.images.size() > 1}">
+			            <img th:each="u : ${product.images}" th:src="${u}" alt=""
+			                 class="rounded border thumb-img" th:attr="data-src=${u}"
+			                 style="height:64px; width:64px; object-fit:cover; cursor:pointer;">
+			        </div>
+			    </div>
+			</div>
             <div class="col-md-7">
                 <h3 th:text="${product.name}"></h3>
                 <div class="text-danger fs-3 fw-bold my-2"
@@ -114,6 +124,11 @@
                     data.favorited ? '♥ Đã yêu thích' : '♡ Yêu thích';
             });
         }
+        document.querySelectorAll('.thumb-img').forEach(function (img) {
+            img.addEventListener('click', function () {
+                document.getElementById('main-img').src = img.dataset.src;
+            });
+        });
     </script>
 </body>
 </html>

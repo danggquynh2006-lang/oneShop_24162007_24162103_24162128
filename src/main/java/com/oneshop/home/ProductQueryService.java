@@ -3,6 +3,7 @@ package com.oneshop.home;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -26,6 +27,7 @@ public class ProductQueryService {
 
     private final HomeProductRepository repo;
     private final HomeCategoryRepository categoryRepo;
+    private final ProductImages images;
 
     private static Sort sortOf(String sort) {
         return switch (sort == null ? "sold" : sort) {
@@ -56,8 +58,10 @@ public class ProductQueryService {
                 .and(ProductSpecs.ratingAtLeast(f.minRating()));
 
         PageRequest pr = PageRequest.of(Math.max(page, 0), PAGE_SIZE, sortOf(f.sort()));
-        return repo.findAll(spec, pr).map(p -> new HomeProductService.Card(
-                p.getId(), p.getName(), p.getPrice(), p.getSold(), p.getAvgRating()));
+        Page<Product> result = repo.findAll(spec, pr);
+        Map<Long, String> imgs = images.mainUrls(result.getContent().stream().map(Product::getId).toList());
+        return result.map(p -> new HomeProductService.Card(
+                p.getId(), p.getName(), p.getPrice(), p.getSold(), p.getAvgRating(), imgs.get(p.getId())));
     }
 
     @Transactional(readOnly = true)
