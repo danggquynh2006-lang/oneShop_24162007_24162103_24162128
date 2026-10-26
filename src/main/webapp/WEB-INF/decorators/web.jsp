@@ -50,7 +50,9 @@
                 <ul class="navbar-nav align-items-lg-center gap-lg-2">
                     <% if (!loggedIn || isCustomer) { %>
                     <li class="nav-item">
-                        <a class="nav-link" href="/cart"><i class="bi bi-bag-heart"></i> Giỏ hàng</a>
+                        <a class="nav-link position-relative" href="/cart"><i class="bi bi-bag-heart"></i> Giỏ hàng
+                            <span id="cartCount" class="badge bg-danger rounded-pill ms-1 d-none" aria-label="Số sản phẩm trong giỏ">0</span>
+                        </a>
                     </li>
                     <% } %>
                     <% if (loggedIn) { %>
@@ -166,5 +168,27 @@
         </div>
     </footer>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <% if (isCustomer) { %>
+    <script>
+        // Cập nhật số lượng giỏ hàng trên header.
+        // Trang khác (vd nút "Thêm vào giỏ" AJAX) gọi window.updateCartCount() để làm mới số này.
+        window.updateCartCount = function () {
+            var badge = document.getElementById('cartCount');
+            if (!badge) return;
+            fetch('/api/cart/count', { credentials: 'same-origin', headers: { 'Accept': 'application/json' } })
+                .then(function (res) { return res.ok ? res.json() : null; })
+                .then(function (data) {
+                    if (!data || data.ok !== true) return;
+                    var n = Number(data.count) || 0;
+                    badge.textContent = n > 99 ? '99+' : n;
+                    badge.classList.toggle('d-none', n <= 0);
+                })
+                .catch(function () { /* lỗi mạng: giữ nguyên, không làm hỏng trang */ });
+        };
+        document.addEventListener('DOMContentLoaded', window.updateCartCount);
+        // Quay lại bằng nút Back cũng cập nhật lại số.
+        window.addEventListener('pageshow', function (e) { if (e.persisted) window.updateCartCount(); });
+    </script>
+    <% } %>
 </body>
 </html>
