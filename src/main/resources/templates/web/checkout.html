@@ -56,13 +56,18 @@
                         <div class="card-header fw-bold">Phương thức thanh toán</div>
                         <div class="card-body">
                             <div class="form-check">
-                                <input class="form-check-input" type="radio" name="payment" id="payCod" value="COD" checked>
-                                <label class="form-check-label" for="payCod">Thanh toán khi nhận hàng (COD)</label>
-                            </div>
-                            <div class="form-check">
-                                <input class="form-check-input" type="radio" name="payment" id="payVnpay" value="VNPAY" disabled>
-                                <label class="form-check-label text-muted" for="payVnpay">VNPAY (sắp có)</label>
-                            </div>
+						        <input class="form-check-input" type="radio" name="payment" id="payCod" value="COD" checked>
+						        <label class="form-check-label" for="payCod">Thanh toán khi nhận hàng (COD)</label>
+						    </div>
+						    <div class="form-check">
+						        <input class="form-check-input" type="radio" name="payment" id="payVnpay" value="VNPAY"
+						               th:disabled="${!vnpayEnabled}">
+						        <label class="form-check-label" for="payVnpay"
+						               th:text="${vnpayEnabled} ? 'VNPAY (thanh toán online)' : 'VNPAY (chưa cấu hình)'"></label>
+						    </div>
+						    <div class="form-text" th:if="${vnpayEnabled}">
+						        Giỏ hàng nhiều shop sẽ tạo nhiều đơn, mỗi đơn thanh toán VNPAY riêng.
+						    </div>
                         </div>
                     </div>
 

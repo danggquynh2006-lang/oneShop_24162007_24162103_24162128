@@ -24,6 +24,7 @@ public class CheckoutController {
     private final CheckoutService checkoutService;
     private final CheckoutAddressRepository addressRepo;
     private final CheckoutCarrierRepository carrierRepo;
+    private final VnpayAvailability vnpay;
 
     @GetMapping("/user/checkout")
     public String checkout(@RequestParam(required = false) String items,
@@ -56,6 +57,7 @@ public class CheckoutController {
         model.addAttribute("shopCount", preview.shops().size());
         model.addAttribute("shippingFee", shippingFee);
         model.addAttribute("total", total);
+        model.addAttribute("vnpayEnabled", vnpay.enabled());
         return "web/checkout";
     }
 
@@ -71,9 +73,19 @@ public class CheckoutController {
             return "redirect:/login";
         }
         List<Long> ids = parseIds(items);
+
+        if (payment == PaymentMethod.VNPAY && !vnpay.enabled()) {
+            ra.addFlashAttribute("error", "VNPAY chưa được cấu hình trên máy chủ, vui lòng chọn COD.");
+            return "redirect:/user/checkout?items=" + joinIds(ids);
+        }
+
         try {
             CheckoutService.Result result =
                     checkoutService.place(user, ids, addressId, carrierId, payment, voucher);
+
+            if (payment == PaymentMethod.VNPAY && result.orders().size() == 1) {
+                return "redirect:/payment/vnpay/create?orderId=" + result.orders().get(0).id();
+            }
             ra.addFlashAttribute("result", result);
             return "redirect:/user/checkout/success";
         } catch (BusinessException e) {
@@ -90,7 +102,7 @@ public class CheckoutController {
         return "web/checkout-success";
     }
 
-    private static List<Long> parseIds(String items) {
+    static List<Long> parseIds(String items) {
         List<Long> ids = new ArrayList<>();
         if (items == null || items.isBlank()) {
             return ids;

@@ -13,8 +13,19 @@
         </p>
         <p class="mb-1">Các đơn đã tạo (mỗi shop một đơn):</p>
         <ul class="list-unstyled">
-            <li th:each="id : ${result.orderIds}" th:text="'Đơn hàng #' + ${id}"></li>
+            <li class="mb-2" th:each="o : ${result.orders}">
+                Đơn hàng #<span th:text="${o.id}"></span> -
+                <span th:text="${o.shopName}"></span> -
+                <strong th:text="${#numbers.formatInteger(o.total, 0, 'POINT')} + ' đ'"></strong>
+                <a th:if="${result.method.name() == 'VNPAY'}"
+                   th:href="@{/payment/vnpay/create(orderId=${o.id})}"
+                   class="btn btn-sm btn-danger ms-2">Thanh toán VNPAY</a>
+            </li>
         </ul>
+        <p class="text-muted small" th:if="${result.method.name() == 'VNPAY'}">
+            Mỗi đơn thanh toán riêng, liên kết thanh toán có hiệu lực 15 phút.
+            Nếu hết hạn, bạn có thể thanh toán lại trong mục Đơn mua của tôi.
+        </p>
         <a th:href="@{/user/orders}" class="btn btn-danger me-2">Xem đơn của tôi</a>
         <a th:href="@{/}" class="btn btn-outline-secondary">Tiếp tục mua sắm</a>
     </div>
