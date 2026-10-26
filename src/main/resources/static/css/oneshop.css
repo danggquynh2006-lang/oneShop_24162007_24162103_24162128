@@ -1,0 +1,248 @@
+/* =====================================================================
+   OneShop theme: hồng pastel và trắng kem.
+   Bố cục lấy cảm hứng từ template Aura (TemplatesJungle.com).
+   File này nạp SAU Bootstrap, chỉ ghi đè biến và vài class chính.
+   ===================================================================== */
+
+:root {
+  --os-cream: #FFF8F1;
+  --os-pink-50: #FDE8EE;
+  --os-pink-100: #F7C6D4;
+  --os-pink-300: #E89AB2;
+  --os-berry: #B8456B;
+  --os-berry-dark: #8F3354;
+  --os-plum: #4A2C36;
+  --os-mauve: #6B3B4E;
+  --os-line: #F2D9E0;
+  --os-muted: #8A6B77;
+
+  /* Ghi đè biến Bootstrap để mọi trang tự đổi tông */
+  --bs-body-bg: #FFF8F1;
+  --bs-body-color: #4A2C36;
+  --bs-body-font-family: "Quicksand", "Segoe UI", system-ui, sans-serif;
+  --bs-body-font-weight: 500;
+  --bs-heading-color: #4A2C36;
+  --bs-border-color: #F2D9E0;
+  --bs-link-color: #B8456B;
+  --bs-link-color-rgb: 184, 69, 107;
+  --bs-link-hover-color: #8F3354;
+  --bs-link-hover-color-rgb: 143, 51, 84;
+  --bs-light-rgb: 255, 248, 241;
+  --bs-danger: #B8456B;
+  --bs-danger-rgb: 184, 69, 107;
+}
+
+/* ---------- Chữ ---------- */
+h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
+  font-family: "Playfair Display", Georgia, serif;
+  font-weight: 600;
+}
+.os-brand {
+  font-family: "Dancing Script", "Playfair Display", cursive;
+  font-weight: 600;
+  font-size: 1.9rem;
+  line-height: 1;
+  color: var(--os-berry);
+  text-decoration: none;
+}
+.os-section-title {
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+.os-section-title::after {
+  content: "";
+  display: block;
+  width: 64px;
+  height: 3px;
+  border-radius: 3px;
+  background: var(--os-pink-300);
+  margin: .6rem auto 0;
+}
+
+/* ---------- Nút ---------- */
+.btn { border-radius: 999px; font-weight: 600; }
+.btn-danger {
+  --bs-btn-color: #4A2C36;
+  --bs-btn-bg: #F7C6D4;
+  --bs-btn-border-color: #F7C6D4;
+  --bs-btn-hover-color: #4A2C36;
+  --bs-btn-hover-bg: #E89AB2;
+  --bs-btn-hover-border-color: #E89AB2;
+  --bs-btn-active-color: #4A2C36;
+  --bs-btn-active-bg: #E48AA6;
+  --bs-btn-active-border-color: #E48AA6;
+  --bs-btn-disabled-color: #4A2C36;
+  --bs-btn-disabled-bg: #F7C6D4;
+  --bs-btn-disabled-border-color: #F7C6D4;
+  --bs-btn-focus-shadow-rgb: 232, 154, 178;
+}
+.btn-outline-danger {
+  --bs-btn-color: #B8456B;
+  --bs-btn-border-color: #E89AB2;
+  --bs-btn-hover-color: #4A2C36;
+  --bs-btn-hover-bg: #F7C6D4;
+  --bs-btn-hover-border-color: #F7C6D4;
+  --bs-btn-active-color: #4A2C36;
+  --bs-btn-active-bg: #E89AB2;
+  --bs-btn-active-border-color: #E89AB2;
+  --bs-btn-focus-shadow-rgb: 232, 154, 178;
+}
+.btn-outline-secondary {
+  --bs-btn-color: #6B3B4E;
+  --bs-btn-border-color: #D9B8C3;
+  --bs-btn-hover-color: #4A2C36;
+  --bs-btn-hover-bg: #FDE8EE;
+  --bs-btn-hover-border-color: #D9B8C3;
+  --bs-btn-active-color: #4A2C36;
+  --bs-btn-active-bg: #F7C6D4;
+  --bs-btn-active-border-color: #F7C6D4;
+  --bs-btn-focus-shadow-rgb: 232, 154, 178;
+}
+
+/* ---------- Form, thẻ, bảng ---------- */
+.form-control, .form-select {
+  border-radius: .85rem;
+  border-color: var(--os-line);
+  background-color: #fff;
+}
+.form-control:focus, .form-select:focus {
+  border-color: var(--os-pink-300);
+  box-shadow: 0 0 0 .25rem rgba(232, 154, 178, .25);
+}
+.form-check-input:checked {
+  background-color: var(--os-pink-300);
+  border-color: var(--os-pink-300);
+}
+.form-check-input:focus {
+  border-color: var(--os-pink-300);
+  box-shadow: 0 0 0 .25rem rgba(232, 154, 178, .25);
+}
+.card {
+  border-color: var(--os-line);
+  border-radius: 1.1rem;
+}
+.card.shadow-sm {
+  box-shadow: 0 .25rem .9rem rgba(184, 69, 107, .08) !important;
+}
+.table {
+  --bs-table-bg: #fff;
+  --bs-table-hover-bg: #FFF1F5;
+  --bs-table-border-color: #F2D9E0;
+}
+.table-light {
+  --bs-table-bg: #FDE8EE;
+  --bs-table-color: #4A2C36;
+  --bs-table-border-color: #F2D9E0;
+}
+.badge { border-radius: 999px; font-weight: 600; }
+.alert { border-radius: 1rem; }
+.pagination {
+  --bs-pagination-color: #B8456B;
+  --bs-pagination-hover-color: #8F3354;
+  --bs-pagination-hover-bg: #FDE8EE;
+  --bs-pagination-active-color: #4A2C36;
+  --bs-pagination-active-bg: #F7C6D4;
+  --bs-pagination-active-border-color: #F7C6D4;
+  --bs-pagination-border-color: #F2D9E0;
+  --bs-pagination-focus-box-shadow: 0 0 0 .25rem rgba(232, 154, 178, .25);
+}
+.list-group-item.active {
+  background-color: #F7C6D4;
+  border-color: #F7C6D4;
+  color: #4A2C36;
+}
+.list-group-item { border-color: var(--os-line); }
+.dropdown-menu {
+  border-color: var(--os-line);
+  border-radius: 1rem;
+  padding: .5rem;
+}
+.dropdown-item { border-radius: .6rem; }
+.dropdown-item:hover, .dropdown-item:focus { background-color: #FDE8EE; color: #4A2C36; }
+.dropdown-item:active { background-color: #F7C6D4; color: #4A2C36; }
+
+/* ---------- Header trang bán hàng ---------- */
+.os-navbar {
+  background: rgba(255, 248, 241, .94);
+  backdrop-filter: blur(6px);
+  border-bottom: 1px solid var(--os-line);
+}
+.os-navbar .nav-link { color: var(--os-plum); font-weight: 600; }
+.os-navbar .nav-link:hover { color: var(--os-berry); }
+.os-search .form-control {
+  background: #FDE8EE;
+  border-color: transparent;
+  border-radius: 999px 0 0 999px;
+}
+.os-search .btn { border-radius: 0 999px 999px 0; }
+
+/* ---------- Footer trang bán hàng ---------- */
+.os-footer {
+  background: #FDE8EE;
+  color: var(--os-plum);
+  border-top: 1px solid var(--os-line);
+}
+.os-footer h6 {
+  font-family: "Playfair Display", Georgia, serif;
+  color: var(--os-berry);
+  margin-bottom: 1rem;
+}
+.os-footer a { color: var(--os-mauve); text-decoration: none; }
+.os-footer a:hover { color: var(--os-berry); text-decoration: underline; }
+.os-footer ul { list-style: none; padding: 0; margin: 0; }
+.os-footer li { margin-bottom: .4rem; }
+.os-footer-bottom {
+  background: #F7C6D4;
+  color: var(--os-plum);
+  font-size: .9rem;
+}
+.os-footer-bottom a { color: var(--os-plum); text-decoration: underline; }
+
+/* ---------- Khu quản lý (admin, vendor, shipper) ---------- */
+.os-shell { display: flex; min-height: 100vh; }
+.os-sidebar {
+  width: 240px;
+  flex-shrink: 0;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  background: var(--os-mauve);
+  color: #FDE8EE;
+}
+.os-sidebar .os-brand { color: var(--os-pink-100); font-size: 2rem; }
+.os-sidebar .os-role {
+  font-size: .75rem;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--os-pink-100);
+}
+.os-sidebar .nav-link {
+  color: #FDE8EE;
+  border-radius: .8rem;
+  padding: .5rem .8rem;
+  margin-bottom: .15rem;
+}
+.os-sidebar .nav-link:hover { background: rgba(247, 198, 212, .18); color: #fff; }
+.os-sidebar .nav-link.os-active {
+  background: var(--os-pink-100);
+  color: var(--os-plum);
+  font-weight: 700;
+}
+.os-sidebar-footer {
+  margin-top: auto;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(247, 198, 212, .3);
+  font-size: .875rem;
+}
+.os-content {
+  flex: 1;
+  min-width: 0;
+  padding: 1.5rem;
+  background: var(--os-cream);
+}
+@media (max-width: 900px) {
+  .os-shell { flex-direction: column; }
+  .os-sidebar { width: 100%; }
+  .os-sidebar .nav { flex-direction: row !important; flex-wrap: wrap; }
+  .os-content { padding: 1rem; }
+}
