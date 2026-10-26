@@ -21,7 +21,9 @@
                      th:text="'Đặt lúc ' + ${#temporals.format(order.createdAt, 'dd/MM/yyyy HH:mm')}"></div>
                 <div>Giao tới: <span th:text="${order.addressSnapshot}"></span></div>
                 <div th:if="${order.carrier != null}">Vận chuyển: <span th:text="${order.carrier.name}"></span></div>
-                <div>Thanh toán: <span th:text="${order.paymentMethod}"></span></div>
+                <div>Thanh toán: <span th:text="${order.paymentMethod}"></span>
+				    <span class="badge bg-secondary ms-1" th:if="${paymentLabel != null}" th:text="${paymentLabel}"></span>
+				</div>
             </div>
         </div>
 
@@ -49,6 +51,9 @@
                           th:text="${#numbers.formatInteger(order.total, 0, 'POINT')} + ' đ'"></span></div>
             </div>
         </div>
+        
+        <a class="btn btn-danger me-1" th:if="${canPay}"
+   			th:href="@{/payment/vnpay/create(orderId=${order.id})}">Thanh toán VNPAY</a>
 
         <form class="d-inline" method="post" th:action="@{/user/orders/{id}/cancel(id=${order.id})}"
               th:if="${canCancel}" onsubmit="return confirm('Bạn chắc chắn muốn hủy đơn này?');">

@@ -13,7 +13,7 @@
                     <input type="text" name="keyword" class="form-control"
                            placeholder="Tên sản phẩm" th:value="${keyword}">
                 </div>
-                <div class="col-md-3">
+                <div class="col-md-4">
                     <select name="categoryId" class="form-select">
                         <option value="">Tất cả danh mục</option>
                         <optgroup th:each="c : ${categories}" th:label="${c.name}">
@@ -24,6 +24,20 @@
                         </optgroup>
                     </select>
                 </div>
+                <div class="col-md-4">
+                    <select name="shopId" class="form-select">
+                        <option value="">Tất cả shop</option>
+                        <option th:each="s : ${shops}" th:value="${s.id}"
+                                th:selected="${shopId == s.id}" th:text="${s.name}"></option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <select name="brand" class="form-select">
+                        <option value="">Tất cả thương hiệu</option>
+                        <option th:each="b : ${brands}" th:value="${b}"
+                                th:selected="${b == brand}" th:text="${b}"></option>
+                    </select>
+                </div>
                 <div class="col-md-2">
                     <input type="number" name="minPrice" class="form-control" placeholder="Giá từ"
                            min="0" th:value="${minPrice}">
@@ -32,27 +46,37 @@
                     <input type="number" name="maxPrice" class="form-control" placeholder="Giá đến"
                            min="0" th:value="${maxPrice}">
                 </div>
+                <div class="col-md-2">
+                    <select name="minRating" class="form-select">
+                        <option value="">Mọi đánh giá</option>
+                        <option value="4.5" th:selected="${minRating != null and minRating == 4.5}">Từ 4.5 sao</option>
+                        <option value="4" th:selected="${minRating != null and minRating == 4.0}">Từ 4 sao</option>
+                        <option value="3" th:selected="${minRating != null and minRating == 3.0}">Từ 3 sao</option>
+                    </select>
+                </div>
                 <div class="col-md-3">
                     <select name="sort" class="form-select">
                         <option value="sold" th:selected="${sort == 'sold'}">Bán chạy nhất</option>
+                        <option value="new" th:selected="${sort == 'new'}">Mới nhất</option>
+                        <option value="rating" th:selected="${sort == 'rating'}">Đánh giá cao</option>
                         <option value="price_asc" th:selected="${sort == 'price_asc'}">Giá tăng dần</option>
                         <option value="price_desc" th:selected="${sort == 'price_desc'}">Giá giảm dần</option>
                     </select>
                 </div>
-                <div class="col-md-2">
-                    <button type="submit" class="btn btn-danger w-100">Tìm</button>
+                <div class="col-12 text-end">
+                    <a th:href="@{/search}" class="btn btn-outline-secondary me-1">Xóa bộ lọc</a>
+                    <button type="submit" class="btn btn-danger">Tìm</button>
                 </div>
             </div>
         </form>
 
-        <p class="text-muted">Có <strong th:text="${results.size()}"></strong> kết quả.</p>
-        <div th:if="${results.isEmpty()}" class="alert alert-info">
-            Không tìm thấy sản phẩm phù hợp.
-        </div>
+        <p class="text-muted">Có <strong th:text="${products.totalElements}"></strong> kết quả.</p>
+        <div th:if="${products.empty}" class="alert alert-info">Không tìm thấy sản phẩm phù hợp.</div>
 
         <div class="row">
-            <div class="col-6 col-md-3 mb-4" th:each="p : ${results}">
+            <div class="col-6 col-md-3 mb-4" th:each="p : ${products.content}">
                 <div class="card h-100">
+                <div th:replace="~{web/thumb :: thumb(${p.image}, ${p.name})}"></div>
                     <div class="card-body">
                         <h6 class="card-title">
                             <a th:href="@{/product/{id}(id=${p.id})}" class="stretched-link text-decoration-none"
@@ -60,11 +84,27 @@
                         </h6>
                         <div class="text-danger fw-bold"
                              th:text="${#numbers.formatInteger(p.price, 0, 'POINT')} + ' đ'"></div>
-                        <small class="text-muted" th:text="'Đã bán ' + ${p.sold}"></small>
+                        <small class="text-muted"
+                               th:text="'Đã bán ' + ${p.sold} + ' · ★ ' + ${#numbers.formatDecimal(p.rating, 1, 1)}"></small>
                     </div>
                 </div>
             </div>
         </div>
+
+        <nav th:if="${products.totalPages > 1}">
+            <ul class="pagination">
+                <li class="page-item" th:classappend="${products.first} ? 'disabled'">
+                    <a class="page-link" th:href="${pageUrlBase} + 'page=' + ${products.number - 1}">Trước</a>
+                </li>
+                <li class="page-item" th:each="i : ${#numbers.sequence(0, products.totalPages - 1)}"
+                    th:classappend="${i == products.number} ? 'active'">
+                    <a class="page-link" th:href="${pageUrlBase} + 'page=' + ${i}" th:text="${i + 1}"></a>
+                </li>
+                <li class="page-item" th:classappend="${products.last} ? 'disabled'">
+                    <a class="page-link" th:href="${pageUrlBase} + 'page=' + ${products.number + 1}">Sau</a>
+                </li>
+            </ul>
+        </nav>
     </div>
 </body>
 </html>

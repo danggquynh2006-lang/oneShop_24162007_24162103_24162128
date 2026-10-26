@@ -5,12 +5,14 @@ import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import com.oneshop.common.ShopStatus;
 import com.oneshop.entity.Product;
 
-public interface HomeProductRepository extends JpaRepository<Product, Long> {
+public interface HomeProductRepository
+        extends JpaRepository<Product, Long>, JpaSpecificationExecutor<Product> {
 
     String VISIBLE = " from Product p join p.shop s join p.category c left join c.parent cp "
             + "where p.active = true and (p.locked is null or p.locked = false) "
@@ -38,4 +40,15 @@ public interface HomeProductRepository extends JpaRepository<Product, Long> {
                               @Param("id") Long id,
                               @Param("status") ShopStatus status,
                               Pageable pageable);
+
+    @Query("select p" + VISIBLE
+         + "order by (select count(f) from Favorite f where f.product = p) desc, p.sold desc, p.id asc")
+    List<Product> findMostLoved(@Param("status") ShopStatus status, Pageable pageable);
+
+    @Query("select distinct p.brand" + VISIBLE
+         + "and p.brand is not null and p.brand <> '' order by p.brand")
+    List<String> findBrands(@Param("status") ShopStatus status);
+
+    @Query("select distinct s.id, s.name" + VISIBLE + "order by s.name")
+    List<Object[]> findShops(@Param("status") ShopStatus status);
 }

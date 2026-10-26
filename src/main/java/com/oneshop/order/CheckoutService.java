@@ -38,8 +38,11 @@ public class CheckoutService {
                        BigDecimal lineTotal) {}
     public record ShopLines(Long shopId, String shopName, List<Line> lines, BigDecimal subtotal) {}
     public record Preview(List<ShopLines> shops, BigDecimal subtotal) {}
-    public record Result(String groupCode, List<Long> orderIds, BigDecimal total)
-            implements Serializable {}
+    public record OrderRef(Long id, String shopName, BigDecimal total) implements Serializable {}
+    public record Result(String groupCode, List<OrderRef> orders, BigDecimal total,
+                         PaymentMethod method) implements Serializable {}
+    public record Quote(BigDecimal subtotal, BigDecimal shippingFee, BigDecimal discount,
+                        BigDecimal total, String message) {}
 
     private final CartItemRepository itemRepo;
     private final CheckoutAddressRepository addressRepo;
@@ -55,11 +58,49 @@ public class CheckoutService {
         return tx.execute(status -> buildPreview(user, itemIds));
     }
 
+    public Quote quote(User user, List<Long> itemIds, Long carrierId, String voucher) {
+        Carrier carrier = carrierRepo.findById(carrierId).filter(Carrier::isActive)
+                .orElseThrow(() -> new BusinessException("Đơn vị vận chuyển không hợp lệ."));
+        Preview preview = preview(user, itemIds);
+        BigDecimal fee = carrier.getShippingFee();
+        BigDecimal shippingTotal = fee.multiply(BigDecimal.valueOf(preview.shops().size()));
+
+        BigDecimal productDiscount = BigDecimal.ZERO;
+        BigDecimal shippingDiscount = BigDecimal.ZERO;
+        String message = "";
+
+        if (voucher != null && !voucher.isBlank()) {
+            String code = voucher.trim();
+            String firstError = null;
+            int applied = 0;
+            for (ShopLines s : preview.shops()) {
+                try {
+                    PromotionService.Discount d =
+                            promotionService.calculate(code, s.shopId(), s.subtotal(), fee);
+                    productDiscount = productDiscount.add(d.productDiscount());
+                    shippingDiscount = shippingDiscount.add(d.shippingDiscount());
+                    applied++;
+                } catch (BusinessException e) {
+                    if (firstError == null) firstError = e.getMessage();
+                }
+            }
+            if (applied == 0) {
+                throw new BusinessException(firstError != null ? firstError : "Mã giảm giá không hợp lệ.");
+            }
+            message = "Áp dụng thành công cho " + applied + "/" + preview.shops().size() + " shop.";
+        }
+
+        BigDecimal total = PriceCalculator.total(preview.subtotal(), productDiscount,
+                BigDecimal.ZERO, shippingTotal, shippingDiscount);
+        return new Quote(preview.subtotal(), shippingTotal,
+                productDiscount.add(shippingDiscount), total, message);
+    }
+
 
     public Result place(User user, List<Long> itemIds, Long addressId, Long carrierId,
                         PaymentMethod method, String voucher) {
-        if (method != PaymentMethod.COD) {
-            throw new BusinessException("Hiện chỉ hỗ trợ thanh toán khi nhận hàng (COD).");
+        if (method != PaymentMethod.COD && method != PaymentMethod.VNPAY) {
+            throw new BusinessException("Phương thức thanh toán này hiện chưa được hỗ trợ.");
         }
         Carrier carrier = carrierRepo.findById(carrierId).filter(Carrier::isActive)
                 .orElseThrow(() -> new BusinessException("Đơn vị vận chuyển không hợp lệ."));
@@ -69,7 +110,8 @@ public class CheckoutService {
         Preview preview = preview(user, itemIds);
         Set<Long> discountedShops = eligibleShops(voucher, preview, carrier.getShippingFee());
 
-        return tx.execute(status -> create(user, itemIds, address, carrier, voucher, discountedShops));
+        return tx.execute(status ->
+                create(user, itemIds, address, carrier, method, voucher, discountedShops));
     }
 
     private Set<Long> eligibleShops(String voucher, Preview preview, BigDecimal fee) {
@@ -94,7 +136,7 @@ public class CheckoutService {
     }
 
     private Result create(User user, List<Long> itemIds, Address address, Carrier carrier,
-                          String voucher, Set<Long> discountedShops) {
+                          PaymentMethod method, String voucher, Set<Long> discountedShops) {
         List<CartItem> items = selected(user, itemIds);
 
         for (CartItem i : items) {
@@ -119,7 +161,7 @@ public class CheckoutService {
         String snapshot = snapshot(address);
         String groupCode = "G" + UUID.randomUUID().toString().replace("-", "")
                 .substring(0, 12).toUpperCase();
-        List<Long> orderIds = new ArrayList<>();
+        List<OrderRef> refs = new ArrayList<>();
         BigDecimal grand = BigDecimal.ZERO;
 
         for (List<CartItem> lines : groupByShop(items).values()) {
@@ -150,7 +192,7 @@ public class CheckoutService {
                     .discount(productDiscount.add(shippingDiscount))
                     .shippingFee(fee)
                     .total(total)
-                    .paymentMethod(PaymentMethod.COD)
+                    .paymentMethod(method)
                     .paymentGroupCode(groupCode)
                     .build());
 
@@ -164,12 +206,12 @@ public class CheckoutService {
                         .quantity(i.getQuantity())
                         .build());
             }
-            orderIds.add(order.getId());
+            refs.add(new OrderRef(order.getId(), shop.getName(), total));
             grand = grand.add(total);
         }
 
         itemRepo.deleteAll(items);
-        return new Result(groupCode, orderIds, grand);
+        return new Result(groupCode, refs, grand, method);
     }
 
 

@@ -1,13 +1,19 @@
 package com.oneshop.order;
 
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.oneshop.common.BusinessException;
 import com.oneshop.common.OrderStatus;
+import com.oneshop.common.PaymentStatus;
 import com.oneshop.entity.Order;
 import com.oneshop.entity.OrderItem;
+import com.oneshop.entity.Payment;
 import com.oneshop.entity.User;
+import com.oneshop.repository.PaymentRepository;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -15,14 +21,15 @@ import lombok.RequiredArgsConstructor;
 public class UserOrderService {
 
     public record Row(Long id, String shopName, OrderStatus status,
-                      java.math.BigDecimal total, java.time.LocalDateTime createdAt) {}
-    
+                      BigDecimal total, LocalDateTime createdAt) {}
+
     public record ItemView(Long productId, String name, int quantity,
-            java.math.BigDecimal unitPrice, java.math.BigDecimal lineTotal) {}
+                           BigDecimal unitPrice, BigDecimal lineTotal) {}
 
     private final UserOrderRepository orderRepo;
     private final UserOrderItemRepository itemRepo;
     private final CheckoutProductRepository productRepo;
+    private final PaymentRepository paymentRepo;
 
     @Transactional(readOnly = true)
     public List<Row> list(User user, OrderTab tab) {
@@ -46,8 +53,13 @@ public class UserOrderService {
                         i.getProductName(),
                         i.getQuantity(),
                         i.getUnitPrice(),
-                        i.getUnitPrice().multiply(java.math.BigDecimal.valueOf(i.getQuantity()))))
+                        i.getUnitPrice().multiply(BigDecimal.valueOf(i.getQuantity()))))
                 .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public Optional<PaymentStatus> paymentStatus(Long orderId) {
+        return paymentRepo.findByOrderId(orderId).map(Payment::getStatus);
     }
 
     @Transactional
@@ -63,6 +75,12 @@ public class UserOrderService {
         for (OrderItem item : itemRepo.findByOrder(id)) {
             productRepo.increaseStock(item.getProduct().getId(), item.getQuantity());
         }
+        paymentRepo.findByOrderId(id).ifPresent(p -> {
+            if (p.getStatus() == PaymentStatus.PAID) {
+                p.setStatus(PaymentStatus.REFUND_PENDING);
+                p.setRefundRequestedAt(LocalDateTime.now());
+            }
+        });
     }
 
     @Transactional

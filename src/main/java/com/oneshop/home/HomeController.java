@@ -9,6 +9,9 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.server.ResponseStatusException;
 import com.oneshop.auth.SecurityUtil;
+import com.oneshop.entity.User;
+import com.oneshop.favorite.FavoriteService;
+import com.oneshop.favorite.ViewedService;
 import com.oneshop.user.ReviewService;
 import lombok.RequiredArgsConstructor;
 
@@ -19,6 +22,8 @@ public class HomeController {
     private final HomeCategoryService categoryService;
     private final HomeProductService productService;
     private final ReviewService reviewService;
+    private final FavoriteService favoriteService;
+    private final ViewedService viewedService;
 
     @GetMapping("/")
     public String home(Principal principal,
@@ -39,11 +44,21 @@ public class HomeController {
         var product = productService.detail(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
 
+        User user = SecurityUtil.getCurrentUser();
+        boolean favorited = false;
+        if (user != null) {
+            try {
+                viewedService.record(user, id);
+            } catch (RuntimeException e) {
+            }
+            favorited = favoriteService.isFavorite(user, id);
+        }
+
         model.addAttribute("id", id);
         model.addAttribute("product", product);
+        model.addAttribute("favorited", favorited);
         model.addAttribute("related", productService.related(product));
-        model.addAttribute("reviewSection",
-                reviewService.section(id, SecurityUtil.getCurrentUser(), reviewPage));
+        model.addAttribute("reviewSection", reviewService.section(id, user, reviewPage));
         return "web/product-detail";
     }
 }

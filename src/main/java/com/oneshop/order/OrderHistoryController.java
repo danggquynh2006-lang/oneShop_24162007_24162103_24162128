@@ -9,6 +9,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import com.oneshop.auth.SecurityUtil;
 import com.oneshop.common.BusinessException;
+import com.oneshop.common.OrderStatus;
+import com.oneshop.common.PaymentMethod;
+import com.oneshop.common.PaymentStatus;
 import com.oneshop.entity.User;
 import lombok.RequiredArgsConstructor;
 
@@ -17,6 +20,18 @@ import lombok.RequiredArgsConstructor;
 public class OrderHistoryController {
 
     private final UserOrderService orderService;
+    private final VnpayAvailability vnpay;
+
+    private static String label(PaymentStatus s) {
+        return switch (s) {
+            case UNPAID -> "Chưa thanh toán";
+            case PAID -> "Đã thanh toán";
+            case FAILED -> "Thanh toán thất bại";
+            case REFUND_PENDING -> "Chờ hoàn tiền";
+            case REFUNDED -> "Đã hoàn tiền";
+            default -> s.name();
+        };
+    }
 
     @GetMapping("/user/orders")
     public String orders(@RequestParam(defaultValue = "NEW") OrderTab tab, Model model) {
@@ -38,8 +53,23 @@ public class OrderHistoryController {
         }
         try {
             var order = orderService.detail(user, id);
+            PaymentStatus pay = orderService.paymentStatus(id).orElse(null);
+
+            boolean vnpayOrder = order.getPaymentMethod() == PaymentMethod.VNPAY;
+            boolean open = order.getStatus() == OrderStatus.NEW || order.getStatus() == OrderStatus.CONFIRMED;
+            boolean unpaid = pay == null || pay == PaymentStatus.UNPAID || pay == PaymentStatus.FAILED;
+
+            String paymentLabel = null;
+            if (pay != null) {
+                paymentLabel = label(pay);
+            } else if (vnpayOrder) {
+                paymentLabel = "Chưa thanh toán";
+            }
+
             model.addAttribute("order", order);
             model.addAttribute("items", orderService.items(id));
+            model.addAttribute("paymentLabel", paymentLabel);
+            model.addAttribute("canPay", vnpayOrder && open && unpaid && vnpay.enabled());
             model.addAttribute("canCancel", OrderRules.userCanCancel(order.getStatus()));
             model.addAttribute("canReturn", OrderRules.userCanRequestReturn(order.getStatus()));
             return "web/order-detail";

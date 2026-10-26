@@ -18,8 +18,18 @@
 
         <div class="row">
             <div class="col-md-5 mb-4">
-                <div class="border rounded p-5 text-center text-muted">Ảnh sản phẩm</div>
-            </div>
+			    <div th:if="${product.images.isEmpty()}"
+			         class="border rounded p-5 text-center text-muted">Chưa có ảnh sản phẩm</div>
+			    <div th:if="${!product.images.isEmpty()}">
+			        <img id="main-img" th:src="${product.images[0]}" th:alt="${product.name}"
+			             class="img-fluid rounded border w-100" style="max-height:420px; object-fit:contain;">
+			        <div class="d-flex flex-wrap gap-2 mt-2" th:if="${product.images.size() > 1}">
+			            <img th:each="u : ${product.images}" th:src="${u}" alt=""
+			                 class="rounded border thumb-img" th:attr="data-src=${u}"
+			                 style="height:64px; width:64px; object-fit:cover; cursor:pointer;">
+			        </div>
+			    </div>
+			</div>
             <div class="col-md-7">
                 <h3 th:text="${product.name}"></h3>
                 <div class="text-danger fs-3 fw-bold my-2"
@@ -32,6 +42,10 @@
                     <span th:if="${product.brand != null}"> · Thương hiệu: <span th:text="${product.brand}"></span></span>
                 </p>
                 <p th:text="${product.description}"></p>
+                <button type="button" class="btn btn-outline-secondary mb-3" id="btn-favorite"
+				        th:attr="data-product-id=${product.id}">
+				    <span id="fav-label" th:text="${favorited} ? '♥ Đã yêu thích' : '♡ Yêu thích'"></span>
+				</button>
 
                 <div th:if="${product.stock > 0}">
                     <div class="d-flex align-items-center gap-2 mb-3">
@@ -95,6 +109,26 @@
                 if (await addToCart(buyBtn)) window.location.href = '/cart';
             });
         }
+        const favBtn = document.getElementById('btn-favorite');
+        if (favBtn) {
+            favBtn.addEventListener('click', async function () {
+                const res = await fetch('/api/favorites/toggle', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: new URLSearchParams({ productId: favBtn.dataset.productId })
+                });
+                if (res.status === 401) { window.location.href = '/login'; return; }
+                const data = await res.json();
+                if (!data.ok) { alert(data.message); return; }
+                document.getElementById('fav-label').textContent =
+                    data.favorited ? '♥ Đã yêu thích' : '♡ Yêu thích';
+            });
+        }
+        document.querySelectorAll('.thumb-img').forEach(function (img) {
+            img.addEventListener('click', function () {
+                document.getElementById('main-img').src = img.dataset.src;
+            });
+        });
     </script>
 </body>
 </html>
