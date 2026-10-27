@@ -15,4 +15,7 @@ public interface ViewedProductRepository extends JpaRepository<ViewedProduct, Lo
     @Query("select v from ViewedProduct v join fetch v.product p "
          + "where v.user.id = :userId order by v.viewedAt desc")
     List<ViewedProduct> findRecent(@Param("userId") Long userId, Pageable pageable);
+    
+    @Query("select distinct v.product.category.id from ViewedProduct v where v.user.id = :userId")
+    List<Long> categoryIds(@Param("userId") Long userId);
 }
