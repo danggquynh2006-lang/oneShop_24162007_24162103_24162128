@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.oneshop.common.BusinessException;
 import com.oneshop.common.OrderStatus;
 import com.oneshop.common.PaymentStatus;
+import com.oneshop.common.ReturnStatus;
 import com.oneshop.entity.Order;
 import com.oneshop.entity.OrderItem;
 import com.oneshop.entity.Payment;
@@ -35,7 +36,8 @@ public class UserOrderService {
     public record ItemView(Long productId, String name, int quantity,
                            BigDecimal unitPrice, BigDecimal lineTotal) {}
 
-    public record ReturnInfo(String reason, String note, LocalDateTime createdAt) {}
+    public record ReturnInfo(String reason, String note, LocalDateTime createdAt,
+                             ReturnStatus status, String responseNote) {}
 
     private final UserOrderRepository orderRepo;
     private final UserOrderItemRepository itemRepo;
@@ -77,7 +79,8 @@ public class UserOrderService {
     @Transactional(readOnly = true)
     public Optional<ReturnInfo> returnInfo(Long orderId) {
         return returnRepo.findByOrderId(orderId)
-                .map(r -> new ReturnInfo(r.getReason(), r.getNote(), r.getCreatedAt()));
+                .map(r -> new ReturnInfo(r.getReason(), r.getNote(), r.getCreatedAt(),
+                        r.getEffectiveStatus(), r.getResponseNote()));
     }
 
     @Transactional
@@ -117,6 +120,9 @@ public class UserOrderService {
         }
 
         Order order = detail(user, id);
+        if (returnRepo.findByOrderId(id).isPresent()) {
+            throw new BusinessException("Đơn này đã gửi yêu cầu trả hàng, mỗi đơn chỉ được gửi một lần.");
+        }
         if (!OrderRules.userCanRequestReturn(order.getStatus())) {
             throw new BusinessException("Chỉ có thể yêu cầu trả hàng khi đơn đã giao.");
         }
@@ -129,6 +135,7 @@ public class UserOrderService {
                 .order(order)
                 .reason(r)
                 .note(n.isEmpty() ? null : n)
+                .status(ReturnStatus.PENDING)
                 .build());
     }
 }

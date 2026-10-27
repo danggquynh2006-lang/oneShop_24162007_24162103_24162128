@@ -71,9 +71,10 @@ public class OrderHistoryController {
             model.addAttribute("paymentLabel", paymentLabel);
             model.addAttribute("canPay", vnpayOrder && open && unpaid && vnpay.enabled());
             model.addAttribute("canCancel", OrderRules.userCanCancel(order.getStatus()));
-            model.addAttribute("canReturn", OrderRules.userCanRequestReturn(order.getStatus()));
+            var returnInfo = orderService.returnInfo(id).orElse(null);
+            model.addAttribute("canReturn", OrderRules.userCanRequestReturn(order.getStatus()) && returnInfo == null);
             model.addAttribute("returnReasons", UserOrderService.REASONS);
-            model.addAttribute("returnInfo", orderService.returnInfo(id).orElse(null));
+            model.addAttribute("returnInfo", returnInfo);
             return "web/order-detail";
         } catch (BusinessException e) {
             ra.addFlashAttribute("error", e.getMessage());
