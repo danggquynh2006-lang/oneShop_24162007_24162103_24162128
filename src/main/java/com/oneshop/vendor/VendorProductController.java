@@ -55,6 +55,7 @@ public class VendorProductController {
         productForm.setName(product.getName());
         productForm.setDescription(product.getDescription());
         productForm.setPrice(product.getPrice());
+        productForm.setDiscountPercent(product.getDiscountPercent());
         productForm.setStock(product.getStock());
         productForm.setCategoryId(product.getCategory().getId());
         productForm.setBrand(product.getBrand());
