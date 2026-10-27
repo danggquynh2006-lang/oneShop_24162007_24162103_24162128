@@ -37,7 +37,6 @@
             <button class="btn btn-outline-secondary">Từ chối yêu cầu</button>
         </form>
     </div>
-</div><form th:action="@{/vendor/orders/{id}/return(id=${order.id})}" method="post"><input type="hidden" name="accept" value="true"><button class="btn btn-danger">Duyệt trả hàng</button></form><form th:action="@{/vendor/orders/{id}/return(id=${order.id})}" method="post"><input type="hidden" name="accept" value="false"><button class="btn btn-outline-secondary">Từ chối</button></form></div>
 <div th:if="${payment != null and payment.status.name() == 'REFUND_PENDING'}" class="alert alert-warning mt-3">Khoản hoàn tiền đang chờ gửi đến VNPAY hoặc xử lý thủ công cho COD.
     <form th:if="${payment.method.name() == 'VNPAY'}" th:action="@{/vendor/orders/{id}/refund(id=${order.id})}" method="post" class="mt-2"><button class="btn btn-warning">Gửi yêu cầu hoàn tiền VNPAY</button></form>
     <form th:if="${payment.method.name() == 'COD'}" th:action="@{/vendor/orders/{id}/cash-refund(id=${order.id})}" method="post" class="mt-2"><button class="btn btn-warning">Xác nhận đã hoàn tiền mặt</button></form>
