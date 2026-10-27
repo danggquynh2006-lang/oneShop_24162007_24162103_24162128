@@ -20,12 +20,16 @@ import com.oneshop.repository.OrderItemRepository;
 import com.oneshop.repository.OrderRepository;
 import com.oneshop.repository.PaymentRepository;
 import lombok.RequiredArgsConstructor;
+import com.oneshop.common.ReturnStatus;
+import com.oneshop.entity.ReturnRequest;
+import com.oneshop.repository.ReturnRequestRepository;
 
 @Service @RequiredArgsConstructor
 public class VendorOrderService {
     private final OrderRepository orderRepository;
     private final OrderItemRepository itemRepository;
     private final PaymentRepository paymentRepository;
+    private final ReturnRequestRepository returnRepository;
 
     @Transactional(readOnly = true)
     public Page<Order> list(Long shopId, OrderStatus status, int page) {
@@ -63,10 +67,41 @@ public class VendorOrderService {
                 .ifPresent(payment -> payment.setStatus(PaymentStatus.REFUND_PENDING));
     }
 
+    @Transactional(readOnly = true)
+    public ReturnRequest returnRequest(Long orderId) {
+        return returnRepository.findByOrderId(orderId).orElse(null);
+    }
+
     @Transactional
     public void resolveReturn(Long shopId, Long orderId, boolean accept) {
+        resolve(shopId, orderId, accept, null, false);
+    }
+
+    @Transactional
+    public void resolveReturn(Long shopId, Long orderId, boolean accept, String note) {
+        resolve(shopId, orderId, accept, note, true);
+    }
+
+    private void resolve(Long shopId, Long orderId, boolean accept, String note, boolean requireReason) {
         Order order = get(shopId, orderId);
         requireStatus(order, OrderStatus.RETURN_REQUESTED);
+
+        String response = note == null ? "" : note.trim();
+        if (!accept && requireReason) {
+            if (response.length() < 5) {
+                throw new BusinessException("Vui lòng nhập lý do từ chối (ít nhất 5 ký tự).");
+            }
+            if (response.length() > 500) {
+                throw new BusinessException("Lý do từ chối tối đa 500 ký tự.");
+            }
+        }
+
+        returnRepository.findByOrderId(orderId).ifPresent(request -> {
+            request.setStatus(accept ? ReturnStatus.APPROVED : ReturnStatus.REJECTED);
+            request.setResponseNote(response.isEmpty() ? null : response);
+            request.setRespondedAt(LocalDateTime.now());
+        });
+
         if (!accept) {
             order.setStatus(OrderStatus.DELIVERED);
             return;
