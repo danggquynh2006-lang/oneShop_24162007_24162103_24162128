@@ -35,7 +35,7 @@
 						    <a th:href="@{/product/{id}(id=${product.id})}" class="stretched-link text-decoration-none"
 						       th:text="${product.name}"></a>
 						</h6>
-                        <div class="text-danger fw-bold" th:text="${#numbers.formatDecimal(product.price,0,'POINT',0,'COMMA')} + ' đ'"></div>
+                        <div class="fw-bold"><span th:replace="~{fragments/price :: price(${product})}"></span></div>
                         <small class="text-muted" th:text="${product.brand}"></small>
                     </div>
                 </div>
