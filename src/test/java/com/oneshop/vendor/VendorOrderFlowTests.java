@@ -14,6 +14,8 @@ import com.oneshop.repository.OrderItemRepository;
 import com.oneshop.repository.OrderRepository;
 import com.oneshop.repository.PaymentRepository;
 import com.oneshop.repository.ShopRepository;
+import com.oneshop.common.PaymentStatus;
+import com.oneshop.entity.Payment;
 
 @SpringBootTest @ActiveProfiles("demo") @Transactional
 class VendorOrderFlowTests {
@@ -69,5 +71,36 @@ class VendorOrderFlowTests {
         Order delivered = orderWithStatus(OrderStatus.DELIVERED);
         Long shopId = demoShopId();
         assertThrows(BusinessException.class, () -> orderService.reject(shopId, delivered.getId()));
+    }
+    @Test
+    void acceptedReturnRestoresStockAndStartsRefund() {
+        Order order = orderWithStatus(OrderStatus.DELIVERED);
+        order.setStatus(OrderStatus.RETURN_REQUESTED);
+        Product product = firstProductOf(order);
+        int quantity = itemRepository.findByOrderId(order.getId()).get(0).getQuantity();
+        int stockBefore = product.getStock();
+        int soldBefore = product.getSold();
+
+        orderService.resolveReturn(demoShopId(), order.getId(), true);
+
+        assertEquals(OrderStatus.RETURNED, order.getStatus());
+        assertEquals(stockBefore + quantity, product.getStock());
+        assertEquals(soldBefore - quantity, product.getSold());
+        Payment payment = paymentRepository.findByOrderId(order.getId()).orElseThrow();
+        assertEquals(PaymentStatus.REFUND_PENDING, payment.getStatus());
+        assertNotNull(payment.getRefundRequestedAt());
+    }
+
+    @Test
+    void rejectedReturnKeepsOrderDelivered() {
+        Order order = orderWithStatus(OrderStatus.DELIVERED);
+        order.setStatus(OrderStatus.RETURN_REQUESTED);
+        Product product = firstProductOf(order);
+        int stockBefore = product.getStock();
+
+        orderService.resolveReturn(demoShopId(), order.getId(), false);
+
+        assertEquals(OrderStatus.DELIVERED, order.getStatus());
+        assertEquals(stockBefore, product.getStock());
     }
 }
