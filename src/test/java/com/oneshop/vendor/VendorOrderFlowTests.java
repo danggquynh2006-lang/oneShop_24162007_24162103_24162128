@@ -51,4 +51,23 @@ class VendorOrderFlowTests {
         orderService.confirm(shopId, order.getId());
         assertThrows(BusinessException.class, () -> orderService.confirm(shopId, order.getId()));
     }
+    @Test
+    void rejectCancelsOrderAndRestoresStock() {
+        Order order = orderWithStatus(OrderStatus.NEW);
+        Product product = firstProductOf(order);
+        int quantity = itemRepository.findByOrderId(order.getId()).get(0).getQuantity();
+        int stockBefore = product.getStock();
+
+        orderService.reject(demoShopId(), order.getId());
+
+        assertEquals(OrderStatus.CANCELLED, order.getStatus());
+        assertEquals(stockBefore + quantity, product.getStock());
+    }
+
+    @Test
+    void rejectOnlyWorksForNewOrders() {
+        Order delivered = orderWithStatus(OrderStatus.DELIVERED);
+        Long shopId = demoShopId();
+        assertThrows(BusinessException.class, () -> orderService.reject(shopId, delivered.getId()));
+    }
 }
