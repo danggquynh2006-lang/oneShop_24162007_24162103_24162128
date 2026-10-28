@@ -10,6 +10,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import com.oneshop.common.ShopStatus;
 import com.oneshop.entity.Product;
+import java.util.Collection;
 
 public interface HomeProductRepository
         extends JpaRepository<Product, Long>, JpaSpecificationExecutor<Product> {
@@ -40,6 +41,13 @@ public interface HomeProductRepository
                               @Param("id") Long id,
                               @Param("status") ShopStatus status,
                               Pageable pageable);
+    
+    @Query("select p" + VISIBLE
+    	     + "and c.id in :categoryIds and p.id not in :excludeIds order by p.sold desc, p.id asc")
+    	List<Product> findSuggested(@Param("categoryIds") Collection<Long> categoryIds,
+    	                            @Param("excludeIds") Collection<Long> excludeIds,
+    	                            @Param("status") ShopStatus status,
+    	                            Pageable pageable);
 
     @Query("select p" + VISIBLE
          + "order by (select count(f) from Favorite f where f.product = p) desc, p.sold desc, p.id asc")

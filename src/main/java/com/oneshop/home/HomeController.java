@@ -26,15 +26,15 @@ public class HomeController {
     private final ViewedService viewedService;
 
     @GetMapping("/")
-    public String home(Principal principal,
-                       @RequestParam(defaultValue = "0") int page, Model model) {
+    public String home(@RequestParam(defaultValue = "0") int page, Model model) {
+        User user = SecurityUtil.getCurrentUser();
         var tree = categoryService.activeTree();
 
         model.addAttribute("categories", tree);
-        model.addAttribute("loggedIn", principal != null);
+        model.addAttribute("loggedIn", user != null);
         model.addAttribute("featured", tree.stream().limit(4).toList());
         model.addAttribute("products", productService.bestSellers(page));
-        model.addAttribute("suggestions", productService.suggestions());
+        model.addAttribute("suggestions", productService.suggestions(user));
         return "web/home";
     }
 

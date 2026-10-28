@@ -72,6 +72,8 @@ public class OrderHistoryController {
             model.addAttribute("canPay", vnpayOrder && open && unpaid && vnpay.enabled());
             model.addAttribute("canCancel", OrderRules.userCanCancel(order.getStatus()));
             model.addAttribute("canReturn", OrderRules.userCanRequestReturn(order.getStatus()));
+            model.addAttribute("returnReasons", UserOrderService.REASONS);
+            model.addAttribute("returnInfo", orderService.returnInfo(id).orElse(null));
             return "web/order-detail";
         } catch (BusinessException e) {
             ra.addFlashAttribute("error", e.getMessage());
@@ -95,13 +97,16 @@ public class OrderHistoryController {
     }
 
     @PostMapping("/user/orders/{id}/return")
-    public String requestReturn(@PathVariable Long id, RedirectAttributes ra) {
+    public String requestReturn(@PathVariable Long id,
+                                @RequestParam(required = false) String reason,
+                                @RequestParam(required = false) String note,
+                                RedirectAttributes ra) {
         User user = SecurityUtil.getCurrentUser();
         if (user == null) {
             return "redirect:/login";
         }
         try {
-            orderService.requestReturn(user, id);
+            orderService.requestReturn(user, id, reason, note);
             ra.addFlashAttribute("message", "Đã gửi yêu cầu trả hàng cho đơn #" + id + ".");
         } catch (BusinessException e) {
             ra.addFlashAttribute("error", e.getMessage());

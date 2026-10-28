@@ -54,18 +54,69 @@
         
         <a class="btn btn-danger me-1" th:if="${canPay}"
    			th:href="@{/payment/vnpay/create(orderId=${order.id})}">Thanh toán VNPAY</a>
+   			
+			<div class="card mb-3" th:if="${returnInfo != null}">
+			    <div class="card-header fw-bold">Yêu cầu trả hàng của bạn</div>
+			    <div class="card-body">
+			        <div>Lý do: <strong th:text="${returnInfo.reason}"></strong></div>
+			        <div th:if="${returnInfo.note != null}" style="white-space: pre-line"
+			             th:text="${returnInfo.note}"></div>
+			        <small class="text-muted"
+			               th:text="'Gửi lúc ' + ${#temporals.format(returnInfo.createdAt, 'dd/MM/yyyy HH:mm')}"></small>
+			    </div>
+			</div>
+			
+			<div class="card mb-3" th:if="${canReturn}">
+			    <div class="card-header fw-bold">Yêu cầu trả hàng</div>
+			    <div class="card-body">
+			        <form method="post" th:action="@{/user/orders/{id}/return(id=${order.id})}"
+			              onsubmit="return confirm('Gửi yêu cầu trả hàng cho đơn này?');">
+			            <div class="mb-3">
+			                <label for="return-reason" class="form-label">Lý do trả hàng</label>
+			                <select id="return-reason" name="reason" class="form-select" required>
+			                    <option value="">-- Chọn lý do --</option>
+			                    <option th:each="r : ${returnReasons}" th:value="${r}" th:text="${r}"></option>
+			                </select>
+			            </div>
+			            <div class="mb-3">
+			                <label for="return-note" class="form-label">Mô tả chi tiết
+			                    <span id="note-hint" class="text-muted">(không bắt buộc)</span></label>
+			                <textarea id="return-note" name="note" class="form-control" rows="3"
+			                          maxlength="500" placeholder="Mô tả tình trạng sản phẩm..."></textarea>
+			                <div class="form-text"><span id="note-count">0</span>/500 ký tự</div>
+			            </div>
+			            <button class="btn btn-outline-danger" type="submit">Gửi yêu cầu trả hàng</button>
+			        </form>
+			    </div>
+			</div>
 
         <form class="d-inline" method="post" th:action="@{/user/orders/{id}/cancel(id=${order.id})}"
               th:if="${canCancel}" onsubmit="return confirm('Bạn chắc chắn muốn hủy đơn này?');">
             <button class="btn btn-outline-danger" type="submit">Hủy đơn</button>
         </form>
-        <form class="d-inline" method="post" th:action="@{/user/orders/{id}/return(id=${order.id})}"
-              th:if="${canReturn}" onsubmit="return confirm('Gửi yêu cầu trả hàng cho đơn này?');">
-            <button class="btn btn-outline-secondary" type="submit">Yêu cầu trả hàng</button>
-        </form>
         <a class="btn btn-outline-danger ms-1"
 		   th:if="${order.status.name() == 'DELIVERED' and !items.isEmpty()}"
 		   th:href="@{/product/{id}(id=${items[0].productId})}">Đánh giá sản phẩm</a>
     </div>
+    
+    <script>
+	    (function () {
+	        var reason = document.getElementById('return-reason');
+	        var note = document.getElementById('return-note');
+	        var hint = document.getElementById('note-hint');
+	        var count = document.getElementById('note-count');
+	        if (!reason || !note) { return; }
+	        reason.addEventListener('change', function () {
+	            var other = reason.value === 'Khác';
+	            note.required = other;
+	            note.minLength = other ? 10 : 0;
+	            hint.textContent = other ? '(bắt buộc, tối thiểu 10 ký tự)' : '(không bắt buộc)';
+	        });
+	        note.addEventListener('input', function () {
+	            count.textContent = note.value.length;
+	        });
+	    })();
+	</script>
+
 </body>
 </html>

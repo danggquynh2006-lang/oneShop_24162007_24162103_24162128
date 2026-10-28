@@ -12,6 +12,13 @@ import org.springframework.transaction.annotation.Transactional;
 import com.oneshop.common.ShopStatus;
 import com.oneshop.entity.Product;
 import lombok.RequiredArgsConstructor;
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
+import java.util.Set;
+import java.util.stream.Collectors;
+import com.oneshop.entity.User;
+import com.oneshop.repository.FavoriteRepository;
+import com.oneshop.repository.ViewedProductRepository;
 
 @Service
 @RequiredArgsConstructor
@@ -28,6 +35,8 @@ public class HomeProductService {
 
     private final HomeProductRepository repo;
     private final ProductImages images;
+    private final FavoriteRepository favoriteRepo;
+    private final ViewedProductRepository viewedRepo;
 
     private static Card card(Product p, Map<Long, String> imgs) {
         return new Card(p.getId(), p.getName(), p.getPrice(), p.getSold(), p.getAvgRating(),
@@ -49,9 +58,34 @@ public class HomeProductService {
     }
 
     @Transactional(readOnly = true)
-    public List<Card> suggestions() {
-        PageRequest pr = PageRequest.of(0, 4, Sort.by(Sort.Direction.DESC, "avgRating"));
-        return cards(repo.findVisible(-1, ShopStatus.ACTIVE, pr).getContent());
+    public List<Card> suggestions(User user) {
+        List<Product> result = new ArrayList<>();
+
+        if (user != null) {
+            Set<Long> categories = new LinkedHashSet<>(favoriteRepo.categoryIds(user.getId()));
+            categories.addAll(viewedRepo.categoryIds(user.getId()));
+            if (!categories.isEmpty()) {
+                List<Long> exclude = favoriteRepo.productIds(user.getId());
+                if (exclude.isEmpty()) {
+                    exclude = List.of(-1L);
+                }
+                result.addAll(repo.findSuggested(categories, exclude, ShopStatus.ACTIVE, PageRequest.of(0, 4)));
+            }
+        }
+
+        if (result.size() < 4) {
+            Set<Long> have = result.stream().map(Product::getId).collect(Collectors.toSet());
+            PageRequest pr = PageRequest.of(0, 8, Sort.by(Sort.Direction.DESC, "avgRating"));
+            for (Product p : repo.findVisible(-1, ShopStatus.ACTIVE, pr).getContent()) {
+                if (result.size() >= 4) {
+                    break;
+                }
+                if (have.add(p.getId())) {
+                    result.add(p);
+                }
+            }
+        }
+        return cards(result);
     }
 
     @Transactional(readOnly = true)
