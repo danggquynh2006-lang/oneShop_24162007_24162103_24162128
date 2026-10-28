@@ -103,4 +103,23 @@ class VendorOrderFlowTests {
         assertEquals(OrderStatus.DELIVERED, order.getStatus());
         assertEquals(stockBefore, product.getStock());
     }
+    @Test
+    void cashRefundCompletesAfterAcceptedReturn() {
+        Order order = orderWithStatus(OrderStatus.DELIVERED);
+        order.setStatus(OrderStatus.RETURN_REQUESTED);
+        Long shopId = demoShopId();
+        orderService.resolveReturn(shopId, order.getId(), true);
+
+        orderService.completeCashRefund(shopId, order.getId());
+
+        assertEquals(OrderStatus.REFUNDED, order.getStatus());
+        assertEquals(PaymentStatus.REFUNDED, paymentRepository.findByOrderId(order.getId()).orElseThrow().getStatus());
+    }
+
+    @Test
+    void cashRefundIsRefusedBeforeReturn() {
+        Order order = orderWithStatus(OrderStatus.DELIVERED);
+        Long shopId = demoShopId();
+        assertThrows(BusinessException.class, () -> orderService.completeCashRefund(shopId, order.getId()));
+    }
 }
