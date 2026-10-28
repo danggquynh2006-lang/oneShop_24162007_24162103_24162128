@@ -1,0 +1,5 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"><body>
+<!-- Hiển thị giá sản phẩm: giá sau giảm (đỏ) và giá gốc gạch ngang khi có giảm giá -->
+<span th:fragment="price(product)"><strong class="text-danger" th:text="${#numbers.formatDecimal(product.finalPrice,0,'POINT',0,'COMMA')} + ' đ'"></strong><del class="text-muted ms-2 small" th:if="${product.discountPercent > 0}" th:text="${#numbers.formatDecimal(product.price,0,'POINT',0,'COMMA')} + ' đ'"></del></span>
+</body></html>
