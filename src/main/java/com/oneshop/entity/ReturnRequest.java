@@ -1,6 +1,7 @@
 package com.oneshop.entity;
 
 import java.time.LocalDateTime;
+import com.oneshop.common.ReturnStatus;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -22,7 +23,19 @@ public class ReturnRequest {
     @Column(length = 1000)
     private String note;
 
+    @Enumerated(EnumType.STRING)
+    private ReturnStatus status;
+
+    @Column(length = 500)
+    private String responseNote;
+
+    private LocalDateTime respondedAt;
+
     private LocalDateTime createdAt;
+
+    public ReturnStatus getEffectiveStatus() {
+        return status == null ? ReturnStatus.PENDING : status;
+    }
 
     @PrePersist
     void onCreate() {

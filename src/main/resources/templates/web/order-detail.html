@@ -59,6 +59,13 @@
 			    <div class="card-header fw-bold">Yêu cầu trả hàng của bạn</div>
 			    <div class="card-body">
 			        <div>Lý do: <strong th:text="${returnInfo.reason}"></strong></div>
+			        <div>Trạng thái:
+					    <span class="badge bg-warning text-dark" th:if="${returnInfo.status.name() == 'PENDING'}">Đang chờ shop xử lý</span>
+					    <span class="badge bg-success" th:if="${returnInfo.status.name() == 'APPROVED'}">Shop đã chấp nhận</span>
+					    <span class="badge bg-danger" th:if="${returnInfo.status.name() == 'REJECTED'}">Shop đã từ chối</span>
+					</div>
+					<div class="text-danger" th:if="${returnInfo.status.name() == 'REJECTED' and returnInfo.responseNote != null}"
+					     th:text="'Lý do từ chối: ' + ${returnInfo.responseNote}"></div>
 			        <div th:if="${returnInfo.note != null}" style="white-space: pre-line"
 			             th:text="${returnInfo.note}"></div>
 			        <small class="text-muted"

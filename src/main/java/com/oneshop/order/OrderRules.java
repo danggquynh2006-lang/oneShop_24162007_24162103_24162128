@@ -18,7 +18,7 @@ public final class OrderRules {
         NEXT.put(PICKED_UP, EnumSet.of(SHIPPING));
         NEXT.put(SHIPPING, EnumSet.of(DELIVERED));
         NEXT.put(DELIVERED, EnumSet.of(RETURN_REQUESTED));
-        NEXT.put(RETURN_REQUESTED, EnumSet.of(RETURNED));
+        NEXT.put(RETURN_REQUESTED, EnumSet.of(RETURNED, DELIVERED));
         NEXT.put(RETURNED, EnumSet.of(REFUNDED));
         NEXT.put(CANCELLED, EnumSet.noneOf(OrderStatus.class));
         NEXT.put(REFUNDED, EnumSet.noneOf(OrderStatus.class));

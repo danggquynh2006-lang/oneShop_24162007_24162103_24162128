@@ -33,6 +33,7 @@ public class VendorOrderController {
         model.addAttribute("items", orderService.items(id));
         model.addAttribute("payment", orderService.payment(id));
         model.addAttribute("error", error);
+        model.addAttribute("returnRequest", orderService.returnRequest(id));
         return "vendor/order-detail";
     }
 
@@ -51,8 +52,9 @@ public class VendorOrderController {
     }
 
     @PostMapping("/{id}/return")
-    public String resolveReturn(@PathVariable Long id, @RequestParam boolean accept, RedirectAttributes redirect) {
-        try { orderService.resolveReturn(shopId(), id, accept); }
+    public String resolveReturn(@PathVariable Long id, @RequestParam boolean accept,
+                                @RequestParam(required = false) String note, RedirectAttributes redirect) {
+        try { orderService.resolveReturn(shopId(), id, accept, note); }
         catch (BusinessException exception) { redirect.addAttribute("error", exception.getMessage()); }
         return "redirect:/vendor/orders/" + id;
     }
