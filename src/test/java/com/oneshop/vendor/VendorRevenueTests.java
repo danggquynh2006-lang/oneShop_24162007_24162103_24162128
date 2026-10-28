@@ -43,4 +43,15 @@ class VendorRevenueTests {
         assertEquals(0, summary.orders());
         assertEquals(0, BigDecimal.ZERO.compareTo(summary.gross()));
     }
+    @Test
+    void commissionUsesRateSavedAtDeliveryTime() {
+        Shop shop = demoShop();
+        LocalDate day = deliveredOrder().getDeliveredAt().toLocalDate();
+
+        shop.setCommissionRate(new BigDecimal("20.00"));
+
+        var summary = revenueService.daily(shop.getId(), day);
+        assertEquals(0, new BigDecimal("27600").compareTo(summary.commission()));
+        assertEquals(0, new BigDecimal("317400").compareTo(summary.net()));
+    }
 }
