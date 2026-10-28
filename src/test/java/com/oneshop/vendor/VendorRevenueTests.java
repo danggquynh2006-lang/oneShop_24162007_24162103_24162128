@@ -54,4 +54,13 @@ class VendorRevenueTests {
         assertEquals(0, new BigDecimal("27600").compareTo(summary.commission()));
         assertEquals(0, new BigDecimal("317400").compareTo(summary.net()));
     }
+    @Test
+    void otherShopSeesNoRevenue() {
+        Long otherShopId = shopRepository.findAll().stream()
+                .filter(shop -> !shop.getName().equals("Lumière Beauty")).findFirst().orElseThrow().getId();
+        LocalDate today = LocalDate.now();
+
+        assertEquals(0, revenueService.summary(otherShopId, today.getYear(), today.getMonthValue()).orders());
+        assertEquals(0, revenueService.annual(otherShopId, today.getYear()).orders());
+    }
 }
