@@ -63,4 +63,12 @@ class VendorRevenueTests {
         assertEquals(0, revenueService.summary(otherShopId, today.getYear(), today.getMonthValue()).orders());
         assertEquals(0, revenueService.annual(otherShopId, today.getYear()).orders());
     }
+    @Test
+    void chartPointsMatchPeriodLength() {
+        Long shopId = demoShop().getId();
+
+        assertEquals(24, revenueService.daily(shopId, LocalDate.now()).points().size());
+        assertEquals(12, revenueService.annual(shopId, LocalDate.now().getYear()).points().size());
+        assertEquals(LocalDate.of(2024, 2, 1).lengthOfMonth(), revenueService.summary(shopId, 2024, 2).points().size());
+    }
 }
