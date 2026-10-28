@@ -122,4 +122,26 @@ class VendorOrderFlowTests {
         Long shopId = demoShopId();
         assertThrows(BusinessException.class, () -> orderService.completeCashRefund(shopId, order.getId()));
     }
+    @Test
+    void markDeliveredUpdatesSoldCommissionAndCodPayment() {
+        Order order = orderWithStatus(OrderStatus.NEW);
+        order.setStatus(OrderStatus.SHIPPING);
+        Product product = firstProductOf(order);
+        int quantity = itemRepository.findByOrderId(order.getId()).get(0).getQuantity();
+        int soldBefore = product.getSold();
+
+        orderService.markDelivered(order);
+
+        assertEquals(OrderStatus.DELIVERED, order.getStatus());
+        assertNotNull(order.getDeliveredAt());
+        assertEquals(0, order.getShop().getCommissionRate().compareTo(order.getCommissionRateSnapshot()));
+        assertEquals(soldBefore + quantity, product.getSold());
+        assertEquals(PaymentStatus.PAID, paymentRepository.findByOrderId(order.getId()).orElseThrow().getStatus());
+    }
+
+    @Test
+    void markDeliveredRequiresShippingStatus() {
+        Order order = orderWithStatus(OrderStatus.NEW);
+        assertThrows(BusinessException.class, () -> orderService.markDelivered(order));
+    }
 }
