@@ -1,6 +1,7 @@
 package com.oneshop.vendor;
 
 import org.springframework.stereotype.Controller;
+import com.oneshop.entity.Order;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
@@ -34,6 +35,18 @@ public class VendorOrderController {
         model.addAttribute("payment", orderService.payment(id));
         model.addAttribute("error", error);
         return "vendor/order-detail";
+    }
+    @GetMapping("/{id}/slip")
+    public String slip(@PathVariable Long id, Model model, RedirectAttributes redirect) {
+        Order order = orderService.get(shopId(), id);
+        if (order.getStatus() == OrderStatus.NEW || order.getStatus() == OrderStatus.CANCELLED) {
+            redirect.addAttribute("error", "Chỉ in phiếu giao cho đơn đã xác nhận.");
+            return "redirect:/vendor/orders/" + id;
+        }
+        model.addAttribute("order", order);
+        model.addAttribute("items", orderService.items(id));
+        model.addAttribute("payment", orderService.payment(id));
+        return "vendor/order-slip";
     }
 
     @PostMapping("/{id}/confirm")

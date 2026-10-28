@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"><head><title>Phiếu giao hàng</title>
+<style>@media print { .vendor-sidebar, .no-print { display: none !important; } .vendor-content { padding: 0 !important; background: #fff !important; } }</style></head><body>
+<div class="no-print d-flex justify-content-between mb-3"><a th:href="@{/vendor/orders/{id}(id=${order.id})}">← Quay lại đơn hàng</a><button type="button" class="btn btn-danger" onclick="window.print()">In phiếu giao</button></div>
+<div class="card card-body" style="max-width:720px">
+    <h3 class="mb-1" th:text="${order.shop.name}"></h3>
+    <p class="text-muted" th:text="${order.shop.address}"></p>
+    <hr>
+    <h4>PHIẾU GIAO HÀNG - Đơn #<span th:text="${order.id}"></span></h4>
+    <p class="mb-1">Người nhận: <strong th:text="${order.user.fullName}"></strong> - <span th:text="${order.user.phone}"></span></p>
+    <p>Địa chỉ giao: <span th:text="${order.addressSnapshot}"></span></p>
+    <table class="table table-sm"><thead><tr><th>Sản phẩm</th><th class="text-end">SL</th><th class="text-end">Đơn giá</th></tr></thead>
+        <tbody><tr th:each="item : ${items}"><td th:text="${item.productName}"></td><td class="text-end" th:text="${item.quantity}"></td><td class="text-end" th:text="${#numbers.formatDecimal(item.unitPrice,0,'POINT',0,'COMMA')} + ' đ'"></td></tr></tbody></table>
+    <div class="text-end">
+        <div>Tạm tính: <span th:text="${#numbers.formatDecimal(order.subtotal,0,'POINT',0,'COMMA')} + ' đ'"></span></div>
+        <div>Giảm giá: <span th:text="${#numbers.formatDecimal(order.discount,0,'POINT',0,'COMMA')} + ' đ'"></span></div>
+        <div>Phí vận chuyển: <span th:text="${#numbers.formatDecimal(order.shippingFee,0,'POINT',0,'COMMA')} + ' đ'"></span></div>
+        <div class="fs-5">Tổng: <strong th:text="${#numbers.formatDecimal(order.total,0,'POINT',0,'COMMA')} + ' đ'"></strong></div>
+    </div>
+    <div class="alert alert-warning mt-3 mb-0" th:if="${order.paymentMethod.name() == 'COD' and (payment == null or payment.status.name() != 'PAID')}">
+        Thu hộ (COD): <strong th:text="${#numbers.formatDecimal(order.total,0,'POINT',0,'COMMA')} + ' đ'"></strong>
+    </div>
+    <div class="alert alert-success mt-3 mb-0" th:if="${order.paymentMethod.name() != 'COD' or (payment != null and payment.status.name() == 'PAID')}">Đã thanh toán, không thu tiền khi giao.</div>
+</div>
+</body></html>
