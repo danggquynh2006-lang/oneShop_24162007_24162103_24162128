@@ -18,9 +18,14 @@ import com.oneshop.repository.OrderRepository;
 import com.oneshop.vendor.VendorProductService;
 import com.oneshop.vendor.VendorOrderService;
 import com.oneshop.vendor.VendorRevenueService;
+import com.oneshop.entity.Category;
+import com.oneshop.entity.Product;
+import com.oneshop.repository.CategoryRepository;
+import com.oneshop.vendor.ProductForm;
 
 @SpringBootTest @ActiveProfiles("demo") @Transactional
 class VendorFlowTests {
+    @Autowired private CategoryRepository categoryRepository;
     @Autowired private PromotionService promotionService;
     @Autowired private ShopRepository shopRepository;
     @Autowired private PromotionRepository promotionRepository;
@@ -63,5 +68,22 @@ class VendorFlowTests {
         Long orderId = orderRepository.findAll().get(0).getId();
         assertThrows(ResourceNotFoundException.class, () -> productService.get(otherShopId, productId));
         assertThrows(ResourceNotFoundException.class, () -> orderService.get(otherShopId, orderId));
+    }
+    @Test
+    void vendorCanCreateProductWithDiscount() throws Exception {
+        Long shopId = shopRepository.findAll().get(0).getId();
+        Category category = categoryRepository.findAll().stream().filter(Category::isActive)
+                .findFirst().orElseThrow();
+        ProductForm form = new ProductForm();
+        form.setName("Má hồng thử nghiệm");
+        form.setPrice(new BigDecimal("200000"));
+        form.setStock(5);
+        form.setCategoryId(category.getId());
+        form.setDiscountPercent(25);
+
+        Product saved = productService.create(shopId, form, null);
+
+        assertEquals(25, productService.get(shopId, saved.getId()).getDiscountPercent());
+        assertEquals(0, new BigDecimal("150000").compareTo(saved.getFinalPrice()));
     }
 }

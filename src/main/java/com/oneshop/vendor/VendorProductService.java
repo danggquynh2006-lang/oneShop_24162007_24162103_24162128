@@ -91,6 +91,7 @@ public class VendorProductService {
         product.setName(form.getName().trim());
         product.setDescription(form.getDescription());
         product.setPrice(form.getPrice());
+        product.setDiscountPercent(form.getDiscountPercent());
         product.setStock(form.getStock());
         product.setCategory(category);
         product.setBrand(form.getBrand());

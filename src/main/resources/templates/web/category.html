@@ -13,7 +13,7 @@
                 <div class="card-body">
                     <h5><a th:href="@{/product/{id}(id=${product.id})}" th:text="${product.name}"></a></h5>
                     <p th:text="${product.brand}"></p>
-                    <strong class="text-danger" th:text="${#numbers.formatDecimal(product.price,0,'POINT',0,'COMMA')} + ' đ'"></strong>
+<span th:replace="~{fragments/price :: price(${product})}"></span>
                 </div>
             </div>
         </div>

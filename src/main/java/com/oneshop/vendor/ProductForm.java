@@ -15,6 +15,8 @@ public class ProductForm {
     private BigDecimal price;
     @NotNull @Min(0)
     private Integer stock;
+    @NotNull @Min(0) @Max(90)
+    private Integer discountPercent = 0;
     @NotNull
     private Long categoryId;
     @Size(max = 255)

@@ -8,6 +8,7 @@
     <div class="col-md-4"><label class="form-label">Danh mục</label><select class="form-select" th:field="*{categoryId}" required><option value="">Chọn danh mục</option><option th:each="category : ${categories}" th:value="${category.id}" th:text="${category.name}"></option></select><div class="text-danger" th:errors="*{categoryId}"></div></div>
     <div class="col-md-4"><label class="form-label">Giá (VND)</label><input type="number" min="1" step="1" class="form-control" th:field="*{price}" required><div class="text-danger" th:errors="*{price}"></div></div>
     <div class="col-md-4"><label class="form-label">Tồn kho</label><input type="number" min="0" class="form-control" th:field="*{stock}" required><div class="text-danger" th:errors="*{stock}"></div></div>
+	<div class="col-md-4"><label class="form-label">Giảm giá (%)</label><input type="number" min="0" max="90" step="1" class="form-control" th:field="*{discountPercent}" required><div class="text-danger" th:errors="*{discountPercent}"></div></div>
     <div class="col-12"><label class="form-label">Mô tả</label><textarea class="form-control" th:field="*{description}" rows="5"></textarea></div>
     <div class="col-12"><label class="form-label">Ảnh sản phẩm</label><input class="form-control" type="file" name="images" accept="image/*" multiple></div>
     <div class="col-12 form-check ms-2"><input class="form-check-input" type="checkbox" th:field="*{active}"><label class="form-check-label">Hiển thị</label></div>
