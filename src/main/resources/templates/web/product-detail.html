@@ -15,7 +15,8 @@
             <div class="col-md-7">
                 <h3 th:text="${product.name}"></h3>
                 <p class="text-muted" th:text="${product.brand}"></p>
-                <div class="text-danger fs-3 fw-bold my-2" th:text="${#numbers.formatDecimal(product.price,0,'POINT',0,'COMMA')} + ' đ'"></div>
+				<div class="my-2"><span class="text-danger fs-3 fw-bold" th:text="${#numbers.formatDecimal(product.finalPrice,0,'POINT',0,'COMMA')} + ' đ'"></span>
+				    <span th:if="${product.discountPercent > 0}"><del class="text-muted ms-2" th:text="${#numbers.formatDecimal(product.price,0,'POINT',0,'COMMA')} + ' đ'"></del> <span class="badge bg-danger ms-1" th:text="'-' + ${product.discountPercent} + '%'"></span></span></div>
                 <p class="text-muted" th:text="'Đã bán ' + ${product.sold} + ' · Còn ' + ${product.stock} + ' sản phẩm'"></p>
                 <p th:text="${product.description}"></p>
                 <p>Shop: <a th:href="@{/shops/{id}(id=${product.shop.id})}" th:text="${product.shop.name}"></a></p>
