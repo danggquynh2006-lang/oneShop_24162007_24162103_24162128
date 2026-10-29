@@ -3,7 +3,9 @@
 
 - Vendor đặt mức giảm 0-90% cho từng sản phẩm tại `/vendor/products` (ô "Giảm giá (%)"). `Product.getFinalPrice()` trả giá bán sau giảm, làm tròn đến đồng.
 - Trang chủ, trang danh mục, trang shop, trang chi tiết và bảng sản phẩm của vendor hiện giá sau giảm kèm giá gốc gạch ngang. Giao diện dùng chung fragment `fragments/price`.
-- Phiếu giao hàng in được tại `/vendor/orders/{id}/slip` (chỉ với đơn đã xác nhận trở đi). Phiếu có địa chỉ giao, danh sách sản phẩm, tổng tiền và số tiền thu hộ khi thanh toán COD.## OneShop - phần Vendor của Jung Nguyễn
+- Phiếu giao hàng in được tại `/vendor/orders/{id}/slip` (chỉ với đơn đã xác nhận trở đi). Phiếu có địa chỉ giao, danh sách sản phẩm, tổng tiền và số tiền thu hộ khi thanh toán COD.
+
+## OneShop - phần Vendor của Jung Nguyễn
 
 Mã này kết hợp bản `24162007_made4.zip` với các module Vendor được bổ sung. Nhánh GitHub `main` ban đầu mới chứa bộ khung Spring Boot; ZIP là nền tảng đầy đủ hơn để tiếp tục.
 
@@ -17,7 +19,15 @@ mvn '-Dspring-boot.run.profiles=demo' spring-boot:run
 
 Mở `http://localhost:8080/login`. Tài khoản mẫu `vendor@oneshop.com`, `admin@oneshop.com`, `user@oneshop.com`; mật khẩu demo chung `Oneshop@123`. Cơ sở dữ liệu H2 nằm trong bộ nhớ và được tạo lại khi khởi động. Chế độ thường không tự tạo tài khoản demo.
 
-Shop mẫu `/shops/1` có thêm 18 sản phẩm high-end: 6 má hồng, 6 son môi và 6 bảng mắt. Có thể mở từng loại từ menu danh mục ở trang chủ và xem thông tin ở trang chi tiết sản phẩm. Tên dòng sản phẩm/màu và ảnh mẫu lấy từ trang hãng [Dior](https://www.dior.com/en_us/beauty/products/dior-backstage-rosy-glow-E000000576.html), [Chanel](https://www.chanel.com/fr/maquillage/p/164308/les-4-ombres-ombre-a-paupieres-effets-multiples/), [NARS](https://www.narscosmetics.com/USA/orgasm-afterglow-liquid-blush/0194251132020.html), [Gucci](https://www.gucci.com/uk/en_gb/pr/beauty/beauty-makeup/25-goldie-red-rouge-a-levres-mat-lipstick-p-6112349PL129250), [Tom Ford](https://www.tomfordbeauty.com/products/lip-color) và [Pat McGrath Labs](https://www.patmcgrath.com/products/mothership-x-moonlit-seduction). Ảnh chỉ được liên kết từ website hãng, không sao chép vào repository; liên kết có thể ngừng hoạt động hoặc bị chặn. Khi triển khai thật, shop cần dùng ảnh được phép sử dụng và tải qua `/vendor/products`. Giá và tồn kho trong H2 **chỉ là dữ liệu minh họa**, không phải báo giá hoặc hàng sẵn có ngoài đời.
+Shop mẫu `/shops/1` có 18 sản phẩm trang điểm high-end: 6 má hồng, 6 son môi và 6 bảng mắt. Thư mục `src/main/resources/static/images/products/` chứa ảnh tĩnh cho 27 sản phẩm demo (18 mỹ phẩm trang điểm và 9 sản phẩm chăm sóc da); `DemoSeeder` dùng đường dẫn `/images/products/...` nên ảnh không còn phụ thuộc CDN bên ngoài khi chạy ứng dụng. Các ảnh được đưa vào Git và sẽ hiển thị cho người clone repository, đồng thời có thể xem trước một số ảnh ngay trên trang này:
+
+| Danh mục | Sản phẩm minh họa |
+| --- | --- |
+| Má hồng | ![Dior Backstage Rosy Glow 001 Pink](src/main/resources/static/images/products/dior-backstage-rosy-glow-001-pink.jpg) |
+| Son môi | ![Dior Rouge Dior 999](src/main/resources/static/images/products/dior-rouge-dior-999.jpg) |
+| Bảng mắt | ![Dior Backstage Eye Palette 001 Warm Neutrals](src/main/resources/static/images/products/dior-backstage-eye-palette-001-warm-neutrals.jpg) |
+
+Tên sản phẩm và ảnh demo được đối chiếu với các trang/CDN thương hiệu; danh sách nguồn và ghi chú từng ảnh nằm tại `src/main/resources/static/images/products/SOURCES.md`. Một số CDN chặn tải trực tiếp nên ảnh tương ứng được trích từ ảnh chụp catalog demo đã có. Các ảnh, giá và tồn kho chỉ phục vụ minh họa đồ án; không phải báo giá hay cam kết hàng thật. Shop thật cần tải ảnh mà mình có quyền sử dụng qua `/vendor/products`.
 
 ### Chạy với SQL Server
 
