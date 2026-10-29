@@ -20,6 +20,12 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     List<Product> findFeatured(ShopStatus status, Pageable pageable);
 
     @Query("select product from Product product join fetch product.shop where product.active = true "
+            + "and product.shop.status = :status and (lower(product.name) like lower(concat('%', :keyword, '%')) "
+            + "or lower(product.brand) like lower(concat('%', :keyword, '%'))) "
+            + "order by product.sold desc, product.id desc")
+    List<Product> findPublicByKeyword(String keyword, ShopStatus status, Pageable pageable);
+
+    @Query("select product from Product product join fetch product.shop where product.active = true "
             + "and product.shop.status = :status and (product.category.id = :categoryId "
             + "or product.category.parent.id = :categoryId) order by product.id asc")
     List<Product> findPublicByCategory(Long categoryId, ShopStatus status);

@@ -6,6 +6,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import com.oneshop.common.ResourceNotFoundException;
 import com.oneshop.common.ShopStatus;
@@ -28,11 +29,33 @@ public class HomeController {
     private final ReviewService reviewService;
 
     @GetMapping("/")
-    public String home(Model model) {
-        model.addAttribute("categories", categoryService.activeTree());
-        List<Product> featured = products.findFeatured(ShopStatus.ACTIVE, PageRequest.of(0, 8));
+    public String home(@RequestParam(required = false) String keyword, Model model) {
+        List<HomeCategoryService.Node> categoryTree = categoryService.activeTree();
+        model.addAttribute("categories", categoryTree);
+        model.addAttribute("featuredCategories", categoryTree.stream().limit(4).toList());
+        model.addAttribute("loggedIn", SecurityUtil.getCurrentUser() != null);
+        String query = keyword == null ? "" : keyword.trim();
+        List<Product> featured = query.isEmpty()
+                ? products.findFeatured(ShopStatus.ACTIVE, PageRequest.of(0, 8))
+                : products.findPublicByKeyword(query, ShopStatus.ACTIVE, PageRequest.of(0, 20));
+        model.addAttribute("keyword", query);
+        model.addAttribute("searching", !query.isEmpty());
         model.addAttribute("products", featured);
         model.addAttribute("imageUrls", productImages.mainUrls(featured));
+        return "web/home";
+    }
+
+    @GetMapping("/top20")
+    public String top20(Model model) {
+        List<HomeCategoryService.Node> categoryTree = categoryService.activeTree();
+        model.addAttribute("categories", categoryTree);
+        model.addAttribute("featuredCategories", categoryTree.stream().limit(4).toList());
+        model.addAttribute("loggedIn", SecurityUtil.getCurrentUser() != null);
+        List<Product> topProducts = products.findFeatured(ShopStatus.ACTIVE, PageRequest.of(0, 20));
+        model.addAttribute("products", topProducts);
+        model.addAttribute("imageUrls", productImages.mainUrls(topProducts));
+        model.addAttribute("searching", false);
+        model.addAttribute("keyword", "");
         return "web/home";
     }
 

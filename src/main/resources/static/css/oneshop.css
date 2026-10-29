@@ -1,0 +1,53 @@
+:root {
+    --os-cream: #fff8f4;
+    --os-pink: #fce7ed;
+    --os-rose: #b65d77;
+    --os-ink: #49343b;
+    --os-line: #f0dfe3;
+    --bs-body-bg: var(--os-cream);
+    --bs-body-color: var(--os-ink);
+    --bs-link-color: var(--os-rose);
+    --bs-link-hover-color: #8e405a;
+    --bs-danger: #c7677e;
+    --bs-danger-rgb: 199,103,126;
+}
+body { font-family: "Quicksand", "Segoe UI", sans-serif; background: var(--os-cream); }
+h1,h2,h3,h4,h5,h6 { font-family: "Playfair Display", Georgia, serif; color: var(--os-ink); }
+.os-navbar { background: rgba(255,248,244,.97); border-bottom: 1px solid var(--os-line); }
+.os-brand { color: var(--os-rose); font: 600 2rem/1 "Dancing Script", cursive; text-decoration: none; white-space: nowrap; }
+.os-search { max-width: 620px; }
+.os-search .form-control { background: #fce8ee; border: 0; border-radius: 999px 0 0 999px; padding: .7rem 1.2rem; }
+.os-search .btn { border-radius: 0 999px 999px 0; }
+.os-nav-link { color: var(--os-ink); text-decoration: none; font-weight: 600; white-space: nowrap; }
+.os-nav-link:hover { color: var(--os-rose); }
+.home-page { max-width: 1140px; margin: 0 auto; }
+.home-hero { min-height: 190px; padding: 2.1rem 2.5rem; border-radius: 1rem; color: white; display: flex; align-items: center; justify-content: space-between; overflow: hidden; position: relative; background: linear-gradient(112deg,#e84a57 0%,#f57436 58%,#ff981e 100%); }
+.home-hero h1 { color: #fff; font: 700 clamp(1.5rem,3vw,2.25rem)/1.2 "Playfair Display",Georgia,serif; margin: .55rem 0; }
+.home-hero p { margin: 0 0 1rem; color: rgba(255,255,255,.92); }
+.hero-eyebrow,.section-kicker { font-size: .68rem; letter-spacing: .13em; font-weight: 700; opacity: .84; }
+.home-hero .btn { border: 0; border-radius: 999px; color: #a33b48; font-weight: 700; padding: .55rem 1.2rem; }
+.hero-decoration { font-size: 7rem; color: rgba(255,255,255,.19); padding-right: 2rem; }
+.section-heading { display:flex; justify-content:space-between; align-items:end; margin: 1.8rem 0 1rem; }
+.section-heading h2 { font-size: 1.4rem; margin: .22rem 0 0; }
+.section-kicker { color: var(--os-rose); }
+.category-feature-card { height: 88px; display:flex; align-items:center; gap:.8rem; padding:.85rem 1rem; background:rgba(255,255,255,.55); border:1px solid var(--os-line); border-radius:1rem; color:var(--os-ink); text-decoration:none; transition:transform .16s,box-shadow .16s; }
+.category-feature-card:hover { transform:translateY(-2px); box-shadow:0 .45rem 1rem rgba(110,55,70,.08); color:var(--os-rose); }
+.category-icon { width:40px;height:40px;display:grid;place-items:center;border-radius:50%;background:var(--os-pink);color:var(--os-rose);font-size:1.15rem;flex:none; }
+.category-name { font-weight:700; }
+.category-feature-card small { margin-left:auto; white-space:nowrap; color:#8c747b; font-size:.75rem; }
+.category-pills { display:flex; flex-wrap:wrap; gap:.65rem; }
+.btn { border-radius:999px; }
+.btn-outline-danger { --bs-btn-color:var(--os-rose);--bs-btn-border-color:#e4b7c3;--bs-btn-hover-bg:var(--os-pink);--bs-btn-hover-color:var(--os-ink);--bs-btn-hover-border-color:#e4b7c3; }
+.product-card { border:1px solid var(--os-line); border-radius:1rem; overflow:hidden; background:#fff; }
+.product-image-wrap { height:220px; display:grid; place-items:center; padding:.65rem; background:#fff; }
+.product-image-wrap img { max-width:100%; width:100%; height:100%; object-fit:contain; }
+.product-image-placeholder { width:100%;height:100%;display:grid;place-content:center;text-align:center;background:#f0eeee;color:#aaa;font-size:1.3rem; }
+.product-image-placeholder span { font-size:.8rem; }
+.product-card .card-body { padding:.85rem 1rem 1rem; }
+.product-title { font:600 .95rem/1.4 "Quicksand",sans-serif; margin:.25rem 0 .55rem; min-height:2.65rem; }
+.product-title a { color:var(--os-ink); text-decoration:none; }
+.product-price { color:var(--os-rose); font-weight:700; }
+.product-card:hover { box-shadow:0 .45rem 1.2rem rgba(110,55,70,.10); }
+.dropdown-menu { border-color:var(--os-line);border-radius:.8rem; }
+footer.os-footer { background:#fae9ed; color:var(--os-ink); }
+@media(max-width:767.98px) { .home-hero { min-height:165px;padding:1.5rem; }.hero-decoration {display:none}.category-feature-card {padding:.7rem;gap:.55rem;}.category-feature-card small{display:none}.product-image-wrap{height:170px}.os-search{max-width:none}.section-heading h2{font-size:1.2rem} }

@@ -1,47 +1,67 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<head>
-    <title>OneShop - Trang chủ</title>
-</head>
+<head><title>OneShop - Trang chủ</title></head>
 <body>
-    <div class="container my-4">
-    <div class="mb-4">
-	    <h5 class="mb-3">Danh mục</h5>
-	    <div class="d-flex flex-wrap gap-2">
-	        <div class="dropdown" th:each="c : ${categories}">
-	            <a class="btn btn-outline-danger dropdown-toggle"
-	               th:if="${!c.children.isEmpty()}"
-	               href="#" role="button" data-bs-toggle="dropdown" th:text="${c.name}"></a>
-	            <ul class="dropdown-menu" th:if="${!c.children.isEmpty()}">
-	                <li><a class="dropdown-item fw-bold"
-	                       th:href="@{/category/{id}(id=${c.id})}" th:text="'Tất cả ' + ${c.name}"></a></li>
-	                <li th:each="s : ${c.children}">
-	                    <a class="dropdown-item" th:href="@{/category/{id}(id=${s.id})}" th:text="${s.name}"></a>
-	                </li>
-	            </ul>
-	            <a class="btn btn-outline-danger" th:if="${c.children.isEmpty()}"
-	               th:href="@{/category/{id}(id=${c.id})}" th:text="${c.name}"></a>
-	        </div>
-	    </div>
-	</div>
-        <h3 class="mb-4">Sản phẩm bán chạy</h3>
-        <div class="row">
-            <div class="col-6 col-md-3 mb-4" th:each="product : ${products}">
-                <div class="card h-100">
-                    <img th:if="${imageUrls[product.id] != null}" th:src="${imageUrls[product.id]}" th:alt="${product.name}"
-                         class="card-img-top p-2" style="height:210px;object-fit:contain" loading="lazy" referrerpolicy="no-referrer">
-                    <div class="card-body">
-                        <h6 class="card-title">
-						    <a th:href="@{/product/{id}(id=${product.id})}" class="stretched-link text-decoration-none"
-						       th:text="${product.name}"></a>
-						</h6>
-                        <div class="fw-bold"><span th:replace="~{fragments/price :: price(${product})}"></span></div>
-                        <small class="text-muted" th:text="${product.brand}"></small>
-                    </div>
-                </div>
+<div class="home-page">
+    <section class="home-hero mb-4">
+        <div>
+            <span class="hero-eyebrow">ONE SHOP · BEAUTY &amp; CARE</span>
+            <h1 th:text="${loggedIn} ? 'Chào mừng bạn quay lại OneShop' : 'Khám phá vẻ đẹp của riêng bạn'">Khám phá vẻ đẹp của riêng bạn</h1>
+            <p>Khám phá sản phẩm làm đẹp chính hãng với ưu đãi mỗi ngày.</p>
+            <a th:href="@{/top20}" class="btn btn-light">Xem Top 20 <i class="bi bi-arrow-right"></i></a>
+        </div>
+        <div class="hero-decoration" aria-hidden="true"><i class="bi bi-stars"></i></div>
+    </section>
+
+    <section class="mb-4">
+        <div class="section-heading"><div><span class="section-kicker">CHỌN THEO NHU CẦU</span><h2>Danh mục nổi bật</h2></div></div>
+        <div class="row g-3">
+            <div class="col-6 col-md-3" th:each="c : ${featuredCategories}">
+                <a th:href="@{/category/{id}(id=${c.id})}" class="category-feature-card">
+                    <span class="category-icon"><i class="bi bi-flower1"></i></span>
+                    <span class="category-name" th:text="${c.name}"></span>
+                    <small th:text="${c.children.size()} + ' danh mục con'"></small>
+                </a>
             </div>
         </div>
-        <p th:if="${products.empty}">Chưa có sản phẩm.</p>
-    </div>
+    </section>
+
+    <section class="mb-4">
+        <div class="section-heading"><div><span class="section-kicker">TÌM SẢN PHẨM</span><h2>Danh mục</h2></div></div>
+        <div class="category-pills">
+            <div class="dropdown" th:each="c : ${categories}">
+                <a class="btn btn-outline-danger dropdown-toggle" th:if="${!c.children.isEmpty()}" href="#" role="button" data-bs-toggle="dropdown" th:text="${c.name}"></a>
+                <ul class="dropdown-menu" th:if="${!c.children.isEmpty()}">
+                    <li><a class="dropdown-item fw-bold" th:href="@{/category/{id}(id=${c.id})}" th:text="'Tất cả ' + ${c.name}"></a></li>
+                    <li th:each="s : ${c.children}"><a class="dropdown-item" th:href="@{/category/{id}(id=${s.id})}" th:text="${s.name}"></a></li>
+                </ul>
+                <a class="btn btn-outline-danger" th:if="${c.children.isEmpty()}" th:href="@{/category/{id}(id=${c.id})}" th:text="${c.name}"></a>
+            </div>
+        </div>
+    </section>
+
+    <section>
+        <div class="section-heading section-heading-products">
+            <div><span class="section-kicker" th:text="${searching} ? 'KẾT QUẢ TÌM KIẾM' : 'ĐƯỢC YÊU THÍCH'">ĐƯỢC YÊU THÍCH</span><h2 th:text="${searching} ? 'Sản phẩm phù hợp' : 'Sản phẩm bán chạy'">Sản phẩm bán chạy</h2></div>
+            <a th:if="${!searching}" th:href="@{/top20}" class="btn btn-outline-danger btn-sm">Xem Top 20</a>
+        </div>
+        <div id="products" class="row g-3 g-lg-4">
+            <div class="col-6 col-md-3" th:each="product : ${products}">
+                <article class="card product-card h-100">
+                    <a th:href="@{/product/{id}(id=${product.id})}" class="product-image-wrap">
+                        <img th:if="${imageUrls[product.id] != null}" th:src="${imageUrls[product.id]}" th:alt="${product.name}" loading="lazy" referrerpolicy="no-referrer">
+                        <div th:if="${imageUrls[product.id] == null}" class="product-image-placeholder"><i class="bi bi-image"></i><span>OneShop</span></div>
+                    </a>
+                    <div class="card-body">
+                        <small class="text-muted" th:text="${product.brand}"></small>
+                        <h3 class="product-title"><a th:href="@{/product/{id}(id=${product.id})}" th:text="${product.name}"></a></h3>
+                        <div class="product-price"><span th:replace="~{fragments/price :: price(${product})}"></span></div>
+                    </div>
+                </article>
+            </div>
+        </div>
+        <p th:if="${products.empty}" class="text-center text-muted py-5">Chưa có sản phẩm.</p>
+    </section>
+</div>
 </body>
 </html>
