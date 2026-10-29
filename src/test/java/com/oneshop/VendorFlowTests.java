@@ -20,6 +20,7 @@ import com.oneshop.entity.ProductImage;
 import com.oneshop.vendor.VendorProductService;
 import com.oneshop.vendor.VendorOrderService;
 import com.oneshop.vendor.VendorRevenueService;
+import com.oneshop.vendor.ShopService;
 import com.oneshop.entity.Category;
 import com.oneshop.entity.Product;
 import com.oneshop.repository.CategoryRepository;
@@ -37,6 +38,19 @@ class VendorFlowTests {
     @Autowired private OrderRepository orderRepository;
     @Autowired private VendorProductService productService;
     @Autowired private VendorOrderService orderService;
+    @Autowired private ShopService shopService;
+
+    @Test
+    void shopsHaveCreationTimestampsAndAdminCanSetCommission() {
+        var shop = shopRepository.findAll().get(0);
+        assertNotNull(shop.getCreatedAt());
+
+        shopService.updateCommission(shop.getId(), new BigDecimal("12.50"));
+
+        assertEquals(0, new BigDecimal("12.50").compareTo(shop.getCommissionRate()));
+        assertThrows(BusinessException.class,
+                () -> shopService.updateCommission(shop.getId(), new BigDecimal("100.01")));
+    }
 
     @Test
     void promotionCapsDiscountAndChecksShop() {

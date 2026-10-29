@@ -1,6 +1,7 @@
 package com.oneshop.vendor;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -73,6 +74,17 @@ public class ShopService {
         shop.setStatus(ShopStatus.ACTIVE);
         User owner = shop.getOwner();
         owner.setRole(Role.VENDOR);
+    }
+
+    @Transactional
+    public void updateCommission(Long shopId, BigDecimal commissionRate) {
+        if (commissionRate == null || commissionRate.signum() < 0
+                || commissionRate.compareTo(BigDecimal.valueOf(100)) > 0) {
+            throw new BusinessException("Tỷ lệ chiết khấu phải nằm trong khoảng 0–100%.");
+        }
+        Shop shop = shopRepository.findById(shopId)
+                .orElseThrow(() -> new BusinessException("Không tìm thấy shop."));
+        shop.setCommissionRate(commissionRate.setScale(2, java.math.RoundingMode.HALF_UP));
     }
 
     private void validateImage(MultipartFile file) {

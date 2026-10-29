@@ -1,6 +1,7 @@
 package com.oneshop.entity;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import com.oneshop.common.ShopStatus;
 import jakarta.persistence.*;
 import lombok.*;
@@ -32,4 +33,12 @@ public class Shop {
     @Column(nullable = false, precision = 5, scale = 2)
     @Builder.Default
     private BigDecimal commissionRate = BigDecimal.ZERO;
+
+    @Column(nullable = false, updatable = false)
+    private LocalDateTime createdAt;
+
+    @PrePersist
+    void onCreate() {
+        if (createdAt == null) createdAt = LocalDateTime.now();
+    }
 }

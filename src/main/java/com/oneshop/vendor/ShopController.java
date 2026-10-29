@@ -1,6 +1,7 @@
 package com.oneshop.vendor;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -85,14 +86,29 @@ public class ShopController {
     }
 
     @GetMapping("/admin/shops")
-    public String pending(Model model) {
-        model.addAttribute("shops", shopRepository.findByStatus(ShopStatus.PENDING, PageRequest.of(0, 50)));
+    public String pending(@RequestParam(defaultValue = "PENDING") ShopStatus status, Model model) {
+        model.addAttribute("shops", shopRepository.findByStatus(status, PageRequest.of(0, 50)));
+        model.addAttribute("currentStatus", status);
         return "admin/shops";
     }
 
     @PostMapping("/admin/shops/{id}/approve")
     public String approve(@PathVariable Long id) {
         shopService.approve(id);
+        return "redirect:/admin/shops";
+    }
+
+    @PostMapping("/admin/shops/{id}/commission")
+    public String commission(@PathVariable Long id, @RequestParam BigDecimal commissionRate,
+                             @RequestParam(defaultValue = "PENDING") ShopStatus status,
+                             org.springframework.web.servlet.mvc.support.RedirectAttributes redirect) {
+        try {
+            shopService.updateCommission(id, commissionRate);
+            redirect.addFlashAttribute("message", "Đã cập nhật tỷ lệ chiết khấu.");
+        } catch (BusinessException exception) {
+            redirect.addFlashAttribute("error", exception.getMessage());
+        }
+        redirect.addAttribute("status", status);
         return "redirect:/admin/shops";
     }
 }
