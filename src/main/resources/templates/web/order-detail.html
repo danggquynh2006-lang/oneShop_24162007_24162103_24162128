@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Chi tiết đơn hàng - OneShop</title>
+</head>
+<body>
+    <div class="container my-4">
+        <a th:href="@{/user/orders}" class="text-decoration-none">&larr; Về danh sách đơn</a>
+        <h3 class="mt-2 mb-3">Đơn hàng #<span th:text="${order.id}"></span></h3>
+
+        <div class="alert alert-success" th:if="${message}" th:text="${message}"></div>
+        <div class="alert alert-danger" th:if="${error}" th:text="${error}"></div>
+
+        <div class="card mb-3">
+            <div class="card-body">
+                <div class="d-flex justify-content-between mb-2">
+                    <span>Shop: <strong th:text="${order.shop.name}"></strong></span>
+                    <span class="badge bg-danger" th:text="${order.status}"></span>
+                </div>
+                <div class="text-muted small mb-2"
+                     th:text="'Đặt lúc ' + ${#temporals.format(order.createdAt, 'dd/MM/yyyy HH:mm')}"></div>
+                <div>Giao tới: <span th:text="${order.addressSnapshot}"></span></div>
+                <div th:if="${order.carrier != null}">Vận chuyển: <span th:text="${order.carrier.name}"></span></div>
+                <div>Thanh toán: <span th:text="${order.paymentMethod}"></span>
+				    <span class="badge bg-secondary ms-1" th:if="${paymentLabel != null}" th:text="${paymentLabel}"></span>
+				</div>
+            </div>
+        </div>
+
+        <div class="card mb-3">
+            <div class="card-header fw-bold">Sản phẩm</div>
+            <div class="card-body">
+                <div class="d-flex justify-content-between mb-2" th:each="i : ${items}">
+				    <span>
+				        <a th:href="@{/product/{id}(id=${i.productId})}" class="text-decoration-none"
+				           th:text="${i.name}"></a>
+				        × <span th:text="${i.quantity}"></span>
+				    </span>
+				    <span th:text="${#numbers.formatInteger(i.lineTotal, 0, 'POINT')} + ' đ'"></span>
+				</div>
+                <hr>
+                <div class="d-flex justify-content-between"><span>Tiền hàng</span>
+                    <span th:text="${#numbers.formatInteger(order.subtotal, 0, 'POINT')} + ' đ'"></span></div>
+                <div class="d-flex justify-content-between"><span>Giảm giá</span>
+                    <span th:text="'-' + ${#numbers.formatInteger(order.discount, 0, 'POINT')} + ' đ'"></span></div>
+                <div class="d-flex justify-content-between"><span>Phí vận chuyển</span>
+                    <span th:text="${#numbers.formatInteger(order.shippingFee, 0, 'POINT')} + ' đ'"></span></div>
+                <hr>
+                <div class="d-flex justify-content-between fs-5"><span>Tổng cộng</span>
+                    <span class="text-danger fw-bold"
+                          th:text="${#numbers.formatInteger(order.total, 0, 'POINT')} + ' đ'"></span></div>
+            </div>
+        </div>
+        
+        <a class="btn btn-danger me-1" th:if="${canPay}"
+   			th:href="@{/payment/vnpay/create(orderId=${order.id})}">Thanh toán VNPAY</a>
+   			
+			<div class="card mb-3" th:if="${returnInfo != null}">
+			    <div class="card-header fw-bold">Yêu cầu trả hàng của bạn</div>
+			    <div class="card-body">
+			        <div>Lý do: <strong th:text="${returnInfo.reason}"></strong></div>
+			        <div>Trạng thái:
+					    <span class="badge bg-warning text-dark" th:if="${returnInfo.status.name() == 'PENDING'}">Đang chờ shop xử lý</span>
+					    <span class="badge bg-success" th:if="${returnInfo.status.name() == 'APPROVED'}">Shop đã chấp nhận</span>
+					    <span class="badge bg-danger" th:if="${returnInfo.status.name() == 'REJECTED'}">Shop đã từ chối</span>
+					</div>
+					<div class="text-danger" th:if="${returnInfo.status.name() == 'REJECTED' and returnInfo.responseNote != null}"
+					     th:text="'Lý do từ chối: ' + ${returnInfo.responseNote}"></div>
+			        <div th:if="${returnInfo.note != null}" style="white-space: pre-line"
+			             th:text="${returnInfo.note}"></div>
+			        <small class="text-muted"
+			               th:text="'Gửi lúc ' + ${#temporals.format(returnInfo.createdAt, 'dd/MM/yyyy HH:mm')}"></small>
+			    </div>
+			</div>
+			
+			<div class="card mb-3" th:if="${canReturn}">
+			    <div class="card-header fw-bold">Yêu cầu trả hàng</div>
+			    <div class="card-body">
+			        <form method="post" th:action="@{/user/orders/{id}/return(id=${order.id})}"
+			              onsubmit="return confirm('Gửi yêu cầu trả hàng cho đơn này?');">
+			            <div class="mb-3">
+			                <label for="return-reason" class="form-label">Lý do trả hàng</label>
+			                <select id="return-reason" name="reason" class="form-select" required>
+			                    <option value="">-- Chọn lý do --</option>
+			                    <option th:each="r : ${returnReasons}" th:value="${r}" th:text="${r}"></option>
+			                </select>
+			            </div>
+			            <div class="mb-3">
+			                <label for="return-note" class="form-label">Mô tả chi tiết
+			                    <span id="note-hint" class="text-muted">(không bắt buộc)</span></label>
+			                <textarea id="return-note" name="note" class="form-control" rows="3"
+			                          maxlength="500" placeholder="Mô tả tình trạng sản phẩm..."></textarea>
+			                <div class="form-text"><span id="note-count">0</span>/500 ký tự</div>
+			            </div>
+			            <button class="btn btn-outline-danger" type="submit">Gửi yêu cầu trả hàng</button>
+			        </form>
+			    </div>
+			</div>
+
+        <form class="d-inline" method="post" th:action="@{/user/orders/{id}/cancel(id=${order.id})}"
+              th:if="${canCancel}" onsubmit="return confirm('Bạn chắc chắn muốn hủy đơn này?');">
+            <button class="btn btn-outline-danger" type="submit">Hủy đơn</button>
+        </form>
+        <a class="btn btn-outline-danger ms-1"
+		   th:if="${order.status.name() == 'DELIVERED' and !items.isEmpty()}"
+		   th:href="@{/product/{id}(id=${items[0].productId})}">Đánh giá sản phẩm</a>
+    </div>
+    
+    <script>
+	    (function () {
+	        var reason = document.getElementById('return-reason');
+	        var note = document.getElementById('return-note');
+	        var hint = document.getElementById('note-hint');
+	        var count = document.getElementById('note-count');
+	        if (!reason || !note) { return; }
+	        reason.addEventListener('change', function () {
+	            var other = reason.value === 'Khác';
+	            note.required = other;
+	            note.minLength = other ? 10 : 0;
+	            hint.textContent = other ? '(bắt buộc, tối thiểu 10 ký tự)' : '(không bắt buộc)';
+	        });
+	        note.addEventListener('input', function () {
+	            count.textContent = note.value.length;
+	        });
+	    })();
+	</script>
+
+</body>
+</html>
