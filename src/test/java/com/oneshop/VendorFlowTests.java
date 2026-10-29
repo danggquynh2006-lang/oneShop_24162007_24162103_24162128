@@ -23,6 +23,9 @@ import com.oneshop.vendor.VendorRevenueService;
 import com.oneshop.vendor.ShopService;
 import com.oneshop.admin.AdminProductService;
 import com.oneshop.repository.OrderItemRepository;
+import com.oneshop.user.ReviewService;
+import com.oneshop.user.ReviewForm;
+import com.oneshop.common.OrderStatus;
 import com.oneshop.entity.Category;
 import com.oneshop.entity.Product;
 import com.oneshop.repository.CategoryRepository;
@@ -43,6 +46,7 @@ class VendorFlowTests {
     @Autowired private ShopService shopService;
     @Autowired private AdminProductService adminProductService;
     @Autowired private OrderItemRepository orderItemRepository;
+    @Autowired private ReviewService reviewService;
 
     @Test
     void shopsHaveCreationTimestampsAndAdminCanSetCommission() {
@@ -65,6 +69,23 @@ class VendorFlowTests {
 
         assertEquals(!wasActive, referenced.isActive());
         assertThrows(BusinessException.class, () -> adminProductService.delete(referenced.getId()));
+    }
+
+    @Test
+    void customersCanReviewAProductOnlyAfterDeliveryAndOnce() {
+        var delivered = orderRepository.findAll().stream()
+                .filter(order -> order.getStatus() == OrderStatus.DELIVERED).findFirst().orElseThrow();
+        Product product = orderItemRepository.findByOrderId(delivered.getId()).get(0).getProduct();
+        ReviewForm form = new ReviewForm();
+        form.setRating(5);
+        form.setComment("Sản phẩm đúng mô tả.");
+
+        assertTrue(reviewService.canReview(product.getId(), delivered.getUser().getId()));
+        reviewService.create(product.getId(), delivered.getUser().getId(), form);
+
+        assertEquals(5.0, product.getAvgRating());
+        assertThrows(BusinessException.class,
+                () -> reviewService.create(product.getId(), delivered.getUser().getId(), form));
     }
 
     @Test

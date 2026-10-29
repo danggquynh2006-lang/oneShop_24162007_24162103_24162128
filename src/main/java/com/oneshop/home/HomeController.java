@@ -12,6 +12,9 @@ import com.oneshop.common.ShopStatus;
 import com.oneshop.entity.Product;
 import com.oneshop.repository.CategoryRepository;
 import com.oneshop.repository.ProductRepository;
+import com.oneshop.auth.SecurityUtil;
+import com.oneshop.entity.User;
+import com.oneshop.user.ReviewService;
 import lombok.RequiredArgsConstructor;
 
 @Controller
@@ -22,6 +25,7 @@ public class HomeController {
     private final CategoryRepository categories;
     private final ProductRepository products;
     private final ProductImageService productImages;
+    private final ReviewService reviewService;
 
     @GetMapping("/")
     public String home(Model model) {
@@ -48,6 +52,11 @@ public class HomeController {
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy sản phẩm."));
         model.addAttribute("product", product);
         model.addAttribute("imageUrl", productImages.mainUrls(List.of(product)).get(product.getId()));
+        model.addAttribute("reviews", reviewService.list(product.getId()));
+        User currentUser = SecurityUtil.getCurrentUser();
+        model.addAttribute("canReview", reviewService.canReview(product.getId(),
+                currentUser == null ? null : currentUser.getId()));
+        model.addAttribute("reviewForm", new com.oneshop.user.ReviewForm());
         return "web/product-detail";
     }
 }
