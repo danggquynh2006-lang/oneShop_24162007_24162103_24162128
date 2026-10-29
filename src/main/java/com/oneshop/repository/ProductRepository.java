@@ -10,6 +10,7 @@ import com.oneshop.entity.Product;
 import com.oneshop.common.ShopStatus;
 
 public interface ProductRepository extends JpaRepository<Product, Long> {
+    Page<Product> findByNameContainingIgnoreCase(String name, Pageable pageable);
     Page<Product> findByShopIdAndNameContainingIgnoreCase(Long shopId, String name, Pageable pageable);
     Page<Product> findByShopIdAndActiveTrue(Long shopId, Pageable pageable);
     Optional<Product> findByIdAndShopId(Long id, Long shopId);

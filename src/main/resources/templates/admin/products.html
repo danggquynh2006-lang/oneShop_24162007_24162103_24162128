@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"><head><title>Sản phẩm toàn sàn</title></head><body>
+<div class="container py-4">
+  <h2>Quản lý sản phẩm toàn sàn</h2>
+  <div class="alert alert-success" th:if="${message}" th:text="${message}"></div>
+  <div class="alert alert-danger" th:if="${error}" th:text="${error}"></div>
+  <form method="get" class="input-group my-3">
+    <input class="form-control" name="keyword" th:value="${keyword}" placeholder="Tìm theo tên sản phẩm">
+    <button class="btn btn-outline-primary">Tìm</button>
+  </form>
+  <div class="table-responsive"><table class="table table-striped align-middle">
+    <thead><tr><th>Sản phẩm</th><th>Shop</th><th>Danh mục</th><th>Giá</th><th>Đã bán</th><th>Trạng thái</th><th>Thao tác</th></tr></thead>
+    <tbody><tr th:each="product : ${products.content}">
+      <td><strong th:text="${product.name}"></strong><div class="small text-muted" th:text="${product.brand}"></div></td>
+      <td th:text="${product.shop.name}"></td><td th:text="${product.category.name}"></td>
+      <td th:text="${#numbers.formatDecimal(product.finalPrice,0,'POINT',0,'COMMA')} + ' đ'"></td>
+      <td th:text="${product.sold}"></td><td><span class="badge" th:classappend="${product.active} ? 'bg-success' : 'bg-secondary'" th:text="${product.active ? 'Đang bán' : 'Đã ẩn'}"></span></td>
+      <td class="d-flex gap-2">
+        <form th:action="@{/admin/products/{id}/toggle(id=${product.id})}" method="post">
+          <input type="hidden" name="keyword" th:value="${keyword}"><input type="hidden" name="page" th:value="${products.number}">
+          <button class="btn btn-sm btn-outline-warning" th:text="${product.active ? 'Khóa/ẩn' : 'Mở bán'}"></button>
+        </form>
+        <form th:action="@{/admin/products/{id}/delete(id=${product.id})}" method="post" onsubmit="return confirm('Xóa sản phẩm này?')">
+          <input type="hidden" name="keyword" th:value="${keyword}"><input type="hidden" name="page" th:value="${products.number}">
+          <button class="btn btn-sm btn-outline-danger">Xóa</button>
+        </form>
+      </td>
+    </tr></tbody>
+  </table></div>
+  <p th:if="${products.empty}">Không tìm thấy sản phẩm.</p>
+  <nav th:if="${products.totalPages > 1}"><a class="btn btn-sm btn-outline-secondary me-1" th:each="p : ${#numbers.sequence(0,products.totalPages - 1)}" th:href="@{/admin/products(keyword=${keyword},page=${p})}" th:text="${p + 1}"></a></nav>
+</div></body></html>

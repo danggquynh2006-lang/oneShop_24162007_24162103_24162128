@@ -21,6 +21,8 @@ import com.oneshop.vendor.VendorProductService;
 import com.oneshop.vendor.VendorOrderService;
 import com.oneshop.vendor.VendorRevenueService;
 import com.oneshop.vendor.ShopService;
+import com.oneshop.admin.AdminProductService;
+import com.oneshop.repository.OrderItemRepository;
 import com.oneshop.entity.Category;
 import com.oneshop.entity.Product;
 import com.oneshop.repository.CategoryRepository;
@@ -39,6 +41,8 @@ class VendorFlowTests {
     @Autowired private VendorProductService productService;
     @Autowired private VendorOrderService orderService;
     @Autowired private ShopService shopService;
+    @Autowired private AdminProductService adminProductService;
+    @Autowired private OrderItemRepository orderItemRepository;
 
     @Test
     void shopsHaveCreationTimestampsAndAdminCanSetCommission() {
@@ -50,6 +54,17 @@ class VendorFlowTests {
         assertEquals(0, new BigDecimal("12.50").compareTo(shop.getCommissionRate()));
         assertThrows(BusinessException.class,
                 () -> shopService.updateCommission(shop.getId(), new BigDecimal("100.01")));
+    }
+
+    @Test
+    void adminCanHideProductsAcrossShopsButCannotDeleteProductsInOrderHistory() {
+        Product referenced = orderItemRepository.findAll().get(0).getProduct();
+        boolean wasActive = referenced.isActive();
+
+        adminProductService.toggle(referenced.getId());
+
+        assertEquals(!wasActive, referenced.isActive());
+        assertThrows(BusinessException.class, () -> adminProductService.delete(referenced.getId()));
     }
 
     @Test
