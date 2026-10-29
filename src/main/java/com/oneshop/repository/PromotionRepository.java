@@ -6,9 +6,12 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;
 import com.oneshop.entity.Promotion;
+import com.oneshop.common.PromotionScope;
 import jakarta.persistence.LockModeType;
 
 public interface PromotionRepository extends JpaRepository<Promotion, Long> {
+    Page<Promotion> findByScope(PromotionScope scope, Pageable pageable);
+    Optional<Promotion> findByIdAndScope(Long id, PromotionScope scope);
     Page<Promotion> findByShopId(Long shopId, Pageable pageable);
     Optional<Promotion> findByIdAndShopId(Long id, Long shopId);
     boolean existsByCodeIgnoreCase(String code);

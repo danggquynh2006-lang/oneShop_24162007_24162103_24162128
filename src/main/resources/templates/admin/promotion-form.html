@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"><head><title>Khuyến mãi toàn sàn</title></head><body>
+<div class="container py-4"><div class="card shadow-sm"><div class="card-body p-4">
+  <h2 th:text="${formTitle}"></h2>
+  <div class="alert alert-danger" th:if="${formError}" th:text="${formError}"></div>
+  <form th:action="@{${formAction}}" th:object="${form}" method="post">
+    <div class="row">
+      <div class="col-md-4 mb-3"><label class="form-label">Mã khuyến mãi</label><input class="form-control" th:field="*{code}" th:readonly="${current != null}" required><div class="text-danger" th:errors="*{code}"></div></div>
+      <div class="col-md-8 mb-3"><label class="form-label">Tên chương trình</label><input class="form-control" th:field="*{name}" required><div class="text-danger" th:errors="*{name}"></div></div>
+    </div>
+    <div class="row">
+      <div class="col-md-4 mb-3"><label class="form-label">Loại ưu đãi</label><select class="form-select" th:field="*{type}" required><option value="">Chọn loại</option><option value="PERCENT_PRODUCT">Giảm % sản phẩm</option><option value="FIXED_AMOUNT">Giảm số tiền</option><option value="SHIPPING_DISCOUNT">Giảm phí ship</option></select><div class="text-danger" th:errors="*{type}"></div></div>
+      <div class="col-md-4 mb-3"><label class="form-label">Giá trị giảm (% hoặc VND)</label><input class="form-control" type="number" min="0.01" step="0.01" th:field="*{value}" required><div class="text-danger" th:errors="*{value}"></div></div>
+      <div class="col-md-4 mb-3"><label class="form-label">Đơn tối thiểu</label><input class="form-control" type="number" min="0" step="1" th:field="*{minOrder}" required><div class="text-danger" th:errors="*{minOrder}"></div></div>
+    </div>
+    <div class="row">
+      <div class="col-md-3 mb-3"><label class="form-label">Giảm tối đa (nếu giảm %)</label><input class="form-control" type="number" min="0" step="1" th:field="*{maxDiscount}"></div>
+      <div class="col-md-3 mb-3"><label class="form-label">Bắt đầu</label><input class="form-control" type="datetime-local" th:field="*{startAt}" required><div class="text-danger" th:errors="*{startAt}"></div></div>
+      <div class="col-md-3 mb-3"><label class="form-label">Kết thúc</label><input class="form-control" type="datetime-local" th:field="*{endAt}" required><div class="text-danger" th:errors="*{endAt}"></div></div>
+      <div class="col-md-3 mb-3"><label class="form-label">Số lượng mã</label><input class="form-control" type="number" min="1" th:field="*{quantity}" required><div class="text-danger" th:errors="*{quantity}"></div></div>
+    </div>
+    <div class="form-check mb-3"><input class="form-check-input" type="checkbox" th:field="*{active}" id="active"><label class="form-check-label" for="active">Bật mã</label></div>
+    <button class="btn btn-danger">Lưu khuyến mãi</button><a class="btn btn-outline-secondary" th:href="@{/admin/promotions}">Quay lại</a>
+  </form>
+</div></div></div></body></html>

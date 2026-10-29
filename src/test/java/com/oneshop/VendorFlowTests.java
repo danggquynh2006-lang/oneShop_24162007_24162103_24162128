@@ -26,6 +26,10 @@ import com.oneshop.repository.OrderItemRepository;
 import com.oneshop.user.ReviewService;
 import com.oneshop.user.ReviewForm;
 import com.oneshop.common.OrderStatus;
+import com.oneshop.admin.AdminPlatformPromotionService;
+import com.oneshop.common.PromotionScope;
+import com.oneshop.vendor.PromotionForm;
+import java.time.LocalDateTime;
 import com.oneshop.entity.Category;
 import com.oneshop.entity.Product;
 import com.oneshop.repository.CategoryRepository;
@@ -47,6 +51,7 @@ class VendorFlowTests {
     @Autowired private AdminProductService adminProductService;
     @Autowired private OrderItemRepository orderItemRepository;
     @Autowired private ReviewService reviewService;
+    @Autowired private AdminPlatformPromotionService adminPromotionService;
 
     @Test
     void shopsHaveCreationTimestampsAndAdminCanSetCommission() {
@@ -86,6 +91,28 @@ class VendorFlowTests {
         assertEquals(5.0, product.getAvgRating());
         assertThrows(BusinessException.class,
                 () -> reviewService.create(product.getId(), delivered.getUser().getId(), form));
+    }
+
+    @Test
+    void adminCanCreatePlatformPromotionUsableByDifferentShops() {
+        PromotionForm form = new PromotionForm();
+        form.setCode("WHOLESALE15");
+        form.setName("Ưu đãi toàn sàn");
+        form.setType(com.oneshop.common.PromotionType.PERCENT_PRODUCT);
+        form.setValue(new BigDecimal("15"));
+        form.setMinOrder(BigDecimal.ZERO);
+        form.setMaxDiscount(new BigDecimal("50000"));
+        form.setStartAt(LocalDateTime.now().minusMinutes(1));
+        form.setEndAt(LocalDateTime.now().plusDays(3));
+        form.setQuantity(200);
+
+        var saved = adminPromotionService.create(form);
+
+        assertEquals(PromotionScope.PLATFORM, saved.getScope());
+        assertNull(saved.getShop());
+        var discount = promotionService.calculate("WHOLESALE15", 99999L,
+                new BigDecimal("200000"), new BigDecimal("25000"));
+        assertEquals(0, new BigDecimal("30000").compareTo(discount.total()));
     }
 
     @Test

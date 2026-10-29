@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"><head><title>Khuyến mãi toàn sàn</title></head><body>
+<div class="container py-4">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h2>Khuyến mãi toàn sàn</h2><a class="btn btn-danger" th:href="@{/admin/promotions/new}">Tạo khuyến mãi</a>
+  </div>
+  <div class="alert alert-success" th:if="${message}" th:text="${message}"></div>
+  <div class="alert alert-danger" th:if="${error}" th:text="${error}"></div>
+  <div class="table-responsive"><table class="table table-striped align-middle">
+    <thead><tr><th>Mã</th><th>Chương trình</th><th>Loại giảm</th><th>Giá trị</th><th>Thời hạn</th><th>Lượt</th><th>Trạng thái</th><th>Thao tác</th></tr></thead>
+    <tbody>
+      <tr th:if="${promotions.empty}"><td colspan="8" class="text-center text-muted">Chưa có khuyến mãi toàn sàn.</td></tr>
+      <tr th:each="p : ${promotions.content}">
+        <td><strong th:text="${p.code}"></strong></td><td th:text="${p.name}"></td>
+        <td th:text="${p.type}"></td>
+        <td th:text="${p.type.name() == 'PERCENT_PRODUCT' ? p.value + '%' : #numbers.formatDecimal(p.value,0,'POINT',0,'COMMA') + ' đ'}"></td>
+        <td class="small"><span th:text="${#temporals.format(p.startAt,'dd/MM/yyyy HH:mm')}"></span><br><span th:text="${#temporals.format(p.endAt,'dd/MM/yyyy HH:mm')}"></span></td>
+        <td th:text="${p.used} + '/' + ${p.quantity}"></td><td th:text="${p.active ? 'Đang bật' : 'Đã tắt'}"></td>
+        <td class="d-flex gap-2">
+          <a class="btn btn-sm btn-outline-primary" th:href="@{/admin/promotions/{id}/edit(id=${p.id})}">Sửa</a>
+          <form th:action="@{/admin/promotions/{id}/toggle(id=${p.id})}" method="post"><button class="btn btn-sm btn-outline-warning" th:text="${p.active ? 'Tắt' : 'Bật'}"></button></form>
+          <form th:action="@{/admin/promotions/{id}/delete(id=${p.id})}" method="post" onsubmit="return confirm('Xóa mã này?')"><button class="btn btn-sm btn-outline-danger">Xóa</button></form>
+        </td>
+      </tr>
+    </tbody>
+  </table></div>
+  <nav th:if="${promotions.totalPages > 1}" class="d-flex gap-2">
+    <a class="btn btn-sm btn-outline-secondary" th:each="p : ${#numbers.sequence(0,promotions.totalPages - 1)}" th:href="@{/admin/promotions(page=${p})}" th:text="${p+1}"></a>
+  </nav>
+</div></body></html>
