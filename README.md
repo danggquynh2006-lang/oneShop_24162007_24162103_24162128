@@ -1,55 +1,66 @@
+# OneShop - Website bán mỹ phẩm theo mô hình chuỗi cửa hàng
 
+Đồ án môn Lập trình Web. Nhiều shop (vendor) cùng bán trên một sàn, khách mua hàng từ nhiều shop, sàn thu chiết khấu, có nhà vận chuyển và shipper giao hàng.
+
+## Công nghệ
+
+- Spring Boot, Spring Security, JWT (lưu trong cookie HttpOnly)
+- Thymeleaf, Bootstrap 5, Sitemesh 3 (decorator layout)
+- Spring Data JPA, SQL Server
+- Cloudinary (lưu ảnh), JavaMail (OTP qua email)
+
+## Chức năng chính
+
+- **Chung:** đăng ký có OTP email, đăng nhập, đăng xuất, quên mật khẩu có OTP, mật khẩu mã hóa BCrypt
+- **Guest / User:** trang chủ, sản phẩm theo danh mục, giỏ hàng, đặt hàng, lịch sử đơn, profile, nhiều địa chỉ nhận hàng
+- **Vendor:** đăng ký shop, quản lý sản phẩm, đơn hàng, khuyến mãi, doanh thu
+- **Admin / Manager:** quản lý người dùng, danh mục, nhà vận chuyển, chiết khấu, khuyến mãi
+- **Shipper:** quản lý và thống kê đơn được phân công
+
+## Cài đặt và chạy
+
+1. Cài Java 21 (hoặc 17 trở lên), SQL Server, Spring Tool Suite và plugin Lombok.
+2. Tạo database trống tên `OneShop` trong SQL Server.
+3. Sao chép `src/main/resources/application-example.properties` thành `application.properties` cùng thư mục, rồi điền:
+   - thông tin kết nối SQL Server (username, password)
+   - `jwt.secret` (chuỗi ngẫu nhiên từ 32 ký tự trở lên)
+   - `cloudinary.*` (tạo tài khoản miễn phí tại cloudinary.com)
+   - `spring.mail.*` (Gmail kèm App Password, cần bật xác minh 2 bước)
+4. Chạy `OneShopApplication` (Run As → Spring Boot App). Bảng và dữ liệu mẫu được tạo tự động.
+5. Mở http://localhost:8080
+
+> Không commit file `application.properties` (đã nằm trong `.gitignore`).
+
+## Tài khoản mẫu
+
+Mật khẩu chung: `Oneshop@123`
+
+| Vai trò | Email |
+|---|---|
+| Admin | admin@oneshop.com |
+| Manager | manager@oneshop.com |
+| Vendor | vendor@oneshop.com |
+| Shipper | shipper@oneshop.com |
+| User | user@oneshop.com |
+
+## Thành viên
+
+| Thành viên | MSSV | Phụ trách |
+|---|---|---|
+| Quỳnh (TV1) | 24162007 | Hạ tầng, xác thực, profile và địa chỉ, Admin/Manager, Shipper, đánh giá |
+| Jung Nguyễn (TV3) | 24162103 | Vendor, khuyến mãi, thanh toán VNPAY/MoMo, doanh thu |
+| Tiến (TV2) | 24162128 | Guest/User: trang chủ, tìm kiếm, giỏ hàng, đặt hàng, yêu thích |
+
+## Quy ước làm việc
+
+- Nhánh `main`: bản ổn định; `develop`: nhánh tích hợp; mỗi chức năng một nhánh `feature/...`, tạo Pull Request vào `develop`.
+- Commit theo quy ước: `feat:`, `fix:`, `ui:`, `refactor:`, `docs:`, `chore:`.### Giảm giá sản phẩm và phiếu giao hàng
+
+- Vendor đặt mức giảm 0-90% cho từng sản phẩm tại `/vendor/products` (ô "Giảm giá (%)"). `Product.getFinalPrice()` trả giá bán sau giảm, làm tròn đến đồng.
+- Trang chủ, trang danh mục, trang shop, trang chi tiết và bảng sản phẩm của vendor hiện giá sau giảm kèm giá gốc gạch ngang. Giao diện dùng chung fragment `fragments/price`.
+- Phiếu giao hàng in được tại `/vendor/orders/{id}/slip` (chỉ với đơn đã xác nhận trở đi). Phiếu có địa chỉ giao, danh sách sản phẩm, tổng tiền và số tiền thu hộ khi thanh toán COD.## OneShop - phần Vendor của Jung Nguyễn
 ### Giảm giá sản phẩm và phiếu giao hàng
 
 - Vendor đặt mức giảm 0-90% cho từng sản phẩm tại `/vendor/products` (ô "Giảm giá (%)"). `Product.getFinalPrice()` trả giá bán sau giảm, làm tròn đến đồng.
 - Trang chủ, trang danh mục, trang shop, trang chi tiết và bảng sản phẩm của vendor hiện giá sau giảm kèm giá gốc gạch ngang. Giao diện dùng chung fragment `fragments/price`.
 - Phiếu giao hàng in được tại `/vendor/orders/{id}/slip` (chỉ với đơn đã xác nhận trở đi). Phiếu có địa chỉ giao, danh sách sản phẩm, tổng tiền và số tiền thu hộ khi thanh toán COD.## OneShop - phần Vendor của Jung Nguyễn
-
-Mã này kết hợp bản `24162007_made4.zip` với các module Vendor được bổ sung. Nhánh GitHub `main` ban đầu mới chứa bộ khung Spring Boot; ZIP là nền tảng đầy đủ hơn để tiếp tục.
-
-### Chạy demo không cần SQL Server
-
-Yêu cầu Java 17+ và Maven. Trong thư mục dự án, chạy:
-
-```powershell
-mvn '-Dspring-boot.run.profiles=demo' spring-boot:run
-```
-
-Mở `http://localhost:8080/login`. Tài khoản mẫu `vendor@oneshop.com`, `admin@oneshop.com`, `user@oneshop.com`; mật khẩu demo chung `Oneshop@123`. Cơ sở dữ liệu H2 nằm trong bộ nhớ và được tạo lại khi khởi động. Chế độ thường không tự tạo tài khoản demo.
-
-Shop mẫu `/shops/1` có thêm 18 sản phẩm high-end: 6 má hồng, 6 son môi và 6 bảng mắt. Có thể mở từng loại từ menu danh mục ở trang chủ và xem thông tin ở trang chi tiết sản phẩm. Tên dòng sản phẩm/màu và ảnh mẫu lấy từ trang hãng [Dior](https://www.dior.com/en_us/beauty/products/dior-backstage-rosy-glow-E000000576.html), [Chanel](https://www.chanel.com/fr/maquillage/p/164308/les-4-ombres-ombre-a-paupieres-effets-multiples/), [NARS](https://www.narscosmetics.com/USA/orgasm-afterglow-liquid-blush/0194251132020.html), [Gucci](https://www.gucci.com/uk/en_gb/pr/beauty/beauty-makeup/25-goldie-red-rouge-a-levres-mat-lipstick-p-6112349PL129250), [Tom Ford](https://www.tomfordbeauty.com/products/lip-color) và [Pat McGrath Labs](https://www.patmcgrath.com/products/mothership-x-moonlit-seduction). Ảnh chỉ được liên kết từ website hãng, không sao chép vào repository; liên kết có thể ngừng hoạt động hoặc bị chặn. Khi triển khai thật, shop cần dùng ảnh được phép sử dụng và tải qua `/vendor/products`. Giá và tồn kho trong H2 **chỉ là dữ liệu minh họa**, không phải báo giá hoặc hàng sẵn có ngoài đời.
-
-### Chạy với SQL Server
-
-Sao chép `src/main/resources/application-example.properties` thành `application.properties` rồi điền kết nối SQL Server, JWT secret ít nhất 32 ký tự, Cloudinary và mail. File thật đã được `.gitignore` bỏ qua. Không đưa khóa thật vào GitHub.
-
-### Các chức năng Vendor
-
-| URL | Chức năng |
-| --- | --- |
-| `/shop/register` | User đăng ký shop, trạng thái chờ duyệt |
-| `/admin/shops` | Admin/Manager duyệt shop và cấp vai trò Vendor |
-| `/shops/{id}` | Trang shop công khai |
-| `/vendor/shop` | Sửa tên, mô tả, địa chỉ, logo, banner |
-| `/vendor/products` | Quản lý sản phẩm, ảnh, tồn kho, tìm kiếm, phân trang |
-| `/vendor/orders` | Xác nhận/từ chối đơn, xử lý yêu cầu trả hàng |
-| `/vendor/promotions` | Quản lý voucher của shop |
-| `/vendor/revenue` | Doanh thu theo ngày/tháng/năm, trừ chiết khấu |
-
-Các service kiểm tra shop sở hữu trước khi đọc/sửa sản phẩm, đơn hàng hoặc voucher. `PromotionService.calculate(code, shopId, subtotal, shippingFee)` trả giảm tiền hàng, giảm phí ship và tổng giảm; `redeem(...)` ghi lượt dùng trong giao dịch có khóa DB. Phần checkout của TV2 cần gọi `redeem(...)` trong cùng giao dịch tạo đơn, rồi lưu snapshot giá và giảm giá vào `Order`.
-
-Khi Shipper chuyển đơn sang đã giao, module TV1 cần gọi `VendorOrderService.markDelivered(order)` để ghi thời điểm giao, tăng số đã bán và chốt tỷ lệ chiết khấu tại thời điểm đó. Không set `Order.status` trực tiếp ở nhiều module.
-
-### VNPAY sandbox và hoàn tiền
-
-Điền `vnpay.tmn-code`, `vnpay.hash-secret` và `vnpay.return-url` trong `application.properties`; IPN công khai phải được cấu hình tại VNPAY. Checkout của TV2 chuyển khách đến `/payment/vnpay/create?orderId=<id>` sau khi tạo đơn có `paymentMethod=VNPAY`. Callback `/payment/vnpay/return` và `/payment/vnpay/ipn` kiểm tra HMAC-SHA512, merchant, mã tham chiếu, số tiền và trạng thái trước khi cập nhật thanh toán. Hủy hoặc trả hàng đã thanh toán đưa tiền vào `REFUND_PENDING`; Vendor gửi lệnh hoàn qua trang chi tiết đơn. COD hoàn tiền mặt được xác nhận riêng. Không dùng khóa sandbox giả để ghi nhận giao dịch thành công.
-
-Do chưa có mã VNPAY sandbox của nhóm, luồng thanh toán/hoàn tiền với cổng thật chưa được xác nhận; test hiện kiểm tra chữ ký, số tiền và callback lặp trên dữ liệu giả lập. Luồng checkout COD, giỏ hàng, lịch sử mua hàng phía User thuộc TV2 và vẫn là các màn hình mẫu trong ZIP.
-
-### Kiểm thử
-
-```powershell
-mvn test
-```
-
-Test bao gồm khởi động H2, giảm giá voucher, doanh thu sau chiết khấu, quyền sở hữu dữ liệu và callback VNPAY. Ảnh minh chứng giao diện được bàn giao riêng trong thư mục `outputs` bên cạnh ZIP mã nguồn.

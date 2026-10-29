@@ -7,6 +7,7 @@ import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
+import org.springframework.security.web.context.RequestAttributeSecurityContextRepository;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import com.oneshop.auth.CustomUserDetailsService;
@@ -21,6 +22,11 @@ import jakarta.servlet.http.HttpServletResponse;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     public static final String COOKIE_NAME = "token";
+
+    // Đánh dấu SecurityContext vào request để SessionManagementFilter không coi
+    // mỗi request là "vừa đăng nhập" (nếu không sẽ đổi CSRF token ở mọi request).
+    private final RequestAttributeSecurityContextRepository contextRepository =
+            new RequestAttributeSecurityContextRepository();
 
     private final JwtService jwtService;
     private final CustomUserDetailsService userDetailsService;
@@ -47,6 +53,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                         SecurityContext context = SecurityContextHolder.createEmptyContext();
                         context.setAuthentication(auth);
                         SecurityContextHolder.setContext(context);
+                        contextRepository.saveContext(context, request, response);
                     }
                 } catch (UsernameNotFoundException ignored) {
                     // user đã bị xóa: bỏ qua, coi như chưa đăng nhập

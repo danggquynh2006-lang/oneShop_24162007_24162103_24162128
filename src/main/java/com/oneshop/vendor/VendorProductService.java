@@ -64,6 +64,7 @@ public class VendorProductService {
     @Transactional
     public void toggle(Long shopId, Long id) {
         Product product = get(shopId, id);
+        if (product.isLocked()) throw new BusinessException("Sản phẩm đã bị quản trị viên khóa, bạn không thể hiện lại.");
         product.setActive(!product.isActive());
     }
 
@@ -95,7 +96,8 @@ public class VendorProductService {
         product.setStock(form.getStock());
         product.setCategory(category);
         product.setBrand(form.getBrand());
-        product.setActive(form.isActive());
+        // Sản phẩm bị Admin/Manager khóa thì Vendor không bật lại được
+        product.setActive(form.isActive() && !product.isLocked());
     }
 
     private void uploadImages(Product product, MultipartFile[] files) throws IOException {

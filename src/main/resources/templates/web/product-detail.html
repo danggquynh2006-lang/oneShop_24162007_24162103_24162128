@@ -5,24 +5,130 @@
 </head>
 <body>
     <div class="container my-4">
-        <a th:href="@{/shops/{id}(id=${product.shop.id})}">← Về cửa hàng</a>
+
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a th:href="@{/}">Trang chủ</a></li>
+                <li class="breadcrumb-item">
+                    <a th:href="@{/category/{id}(id=${product.categoryId})}" th:text="${product.categoryName}"></a>
+                </li>
+                <li class="breadcrumb-item active" th:text="${product.name}"></li>
+            </ol>
+        </nav>
+
         <div class="row">
             <div class="col-md-5 mb-4">
-                <img th:if="${imageUrl != null}" th:src="${imageUrl}" th:alt="${product.name}"
-                     class="img-fluid border rounded w-100" style="max-height:480px;object-fit:contain" referrerpolicy="no-referrer">
-                <div th:if="${imageUrl == null}" class="border rounded p-5 text-center text-muted">Shop chưa thêm ảnh sản phẩm</div>
-            </div>
+			    <div th:if="${product.images.isEmpty()}"
+			         class="border rounded p-5 text-center text-muted">Chưa có ảnh sản phẩm</div>
+			    <div th:if="${!product.images.isEmpty()}">
+			        <img id="main-img" th:src="${product.images[0]}" th:alt="${product.name}"
+			             class="img-fluid rounded border w-100" style="max-height:420px; object-fit:contain;">
+			        <div class="d-flex flex-wrap gap-2 mt-2" th:if="${product.images.size() > 1}">
+			            <img th:each="u : ${product.images}" th:src="${u}" alt=""
+			                 class="rounded border thumb-img" th:attr="data-src=${u}"
+			                 style="height:64px; width:64px; object-fit:cover; cursor:pointer;">
+			        </div>
+			    </div>
+			</div>
             <div class="col-md-7">
                 <h3 th:text="${product.name}"></h3>
-                <p class="text-muted" th:text="${product.brand}"></p>
-				<div class="my-2"><span class="text-danger fs-3 fw-bold" th:text="${#numbers.formatDecimal(product.finalPrice,0,'POINT',0,'COMMA')} + ' đ'"></span>
-				    <span th:if="${product.discountPercent > 0}"><del class="text-muted ms-2" th:text="${#numbers.formatDecimal(product.price,0,'POINT',0,'COMMA')} + ' đ'"></del> <span class="badge bg-danger ms-1" th:text="'-' + ${product.discountPercent} + '%'"></span></span></div>
-                <p class="text-muted" th:text="'Đã bán ' + ${product.sold} + ' · Còn ' + ${product.stock} + ' sản phẩm'"></p>
+                <div class="text-danger fs-3 fw-bold my-2"
+                     th:text="${#numbers.formatInteger(product.price, 0, 'POINT')} + ' đ'"></div>
+                <p class="text-muted">
+                    Đã bán <span th:text="${product.sold}"></span> ·
+                    <span th:if="${product.stock > 0}">Còn <span th:text="${product.stock}"></span> sản phẩm</span>
+                    <span th:if="${product.stock <= 0}" class="text-danger">Hết hàng</span> ·
+                    Shop: <span th:text="${product.shopName}"></span>
+                    <span th:if="${product.brand != null}"> · Thương hiệu: <span th:text="${product.brand}"></span></span>
+                </p>
                 <p th:text="${product.description}"></p>
-                <p>Shop: <a th:href="@{/shops/{id}(id=${product.shop.id})}" th:text="${product.shop.name}"></a></p>
+                <button type="button" class="btn btn-outline-secondary mb-3" id="btn-favorite"
+				        th:attr="data-product-id=${product.id}">
+				    <span id="fav-label" th:text="${favorited} ? '♥ Đã yêu thích' : '♡ Yêu thích'"></span>
+				</button>
+
+                <div th:if="${product.stock > 0}">
+                    <div class="d-flex align-items-center gap-2 mb-3">
+                        <label for="qty" class="mb-0">Số lượng</label>
+                        <input id="qty" type="number" class="form-control" style="width: 90px"
+                               value="1" min="1" th:max="${product.stock}">
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-outline-danger" type="button" id="btn-add-cart"
+                                th:attr="data-product-id=${product.id}">Thêm vào giỏ</button>
+                        <button class="btn btn-danger" type="button" id="btn-buy-now"
+                                th:attr="data-product-id=${product.id}">Mua ngay</button>
+                    </div>
+                </div>
             </div>
         </div>
 
+        <hr class="my-4">
+        <div th:replace="~{fragments/reviews :: section(${reviewSection})}"></div>
+
+        <hr class="my-4">
+        <h5>Sản phẩm liên quan</h5>
+        <p class="text-muted" th:if="${related.isEmpty()}">Chưa có sản phẩm liên quan.</p>
+        <div class="row">
+            <div class="col-6 col-md-3 mb-3" th:each="r : ${related}">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <a th:href="@{/product/{n}(n=${r.id})}" class="stretched-link text-decoration-none"
+                           th:text="${r.name}"></a>
+                        <div class="text-danger fw-bold"
+                             th:text="${#numbers.formatInteger(r.price, 0, 'POINT')} + ' đ'"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
+
+    <script>
+        async function addToCart(button) {
+            const qty = parseInt(document.getElementById('qty').value, 10) || 1;
+            const res = await fetch('/api/cart/add', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: new URLSearchParams({ productId: button.dataset.productId, quantity: qty })
+            });
+            if (res.status === 401) { window.location.href = '/login'; return false; }
+            const data = await res.json();
+            if (!data.ok) { alert(data.message); return false; }
+            return true;
+        }
+
+        const addBtn = document.getElementById('btn-add-cart');
+        if (addBtn) {
+            addBtn.addEventListener('click', async function () {
+                if (await addToCart(addBtn)) alert('Đã thêm vào giỏ hàng');
+            });
+        }
+        const buyBtn = document.getElementById('btn-buy-now');
+        if (buyBtn) {
+            buyBtn.addEventListener('click', async function () {
+                if (await addToCart(buyBtn)) window.location.href = '/cart';
+            });
+        }
+        const favBtn = document.getElementById('btn-favorite');
+        if (favBtn) {
+            favBtn.addEventListener('click', async function () {
+                const res = await fetch('/api/favorites/toggle', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: new URLSearchParams({ productId: favBtn.dataset.productId })
+                });
+                if (res.status === 401) { window.location.href = '/login'; return; }
+                const data = await res.json();
+                if (!data.ok) { alert(data.message); return; }
+                document.getElementById('fav-label').textContent =
+                    data.favorited ? '♥ Đã yêu thích' : '♡ Yêu thích';
+            });
+        }
+        document.querySelectorAll('.thumb-img').forEach(function (img) {
+            img.addEventListener('click', function () {
+                document.getElementById('main-img').src = img.dataset.src;
+            });
+        });
+    </script>
 </body>
 </html>

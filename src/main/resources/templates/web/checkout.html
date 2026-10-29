@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Thanh toán - OneShop</title>
+</head>
+<body>
+    <div class="container my-4">
+        <h3 class="mb-4">Thanh toán</h3>
+        <div class="alert alert-danger" th:if="${error}" th:text="${error}"></div>
+
+        <form th:action="@{/user/checkout/place}" method="post">
+            <input type="hidden" name="items" th:value="${items}">
+            <div class="row">
+                <div class="col-lg-8">
+
+                    <div class="card mb-4">
+                        <div class="card-header fw-bold">Địa chỉ nhận hàng</div>
+                        <div class="card-body">
+                            <div th:if="${addresses.isEmpty()}" class="text-muted">
+                                Bạn chưa có địa chỉ nhận hàng.
+                                <a th:href="@{/user/addresses}">Thêm địa chỉ</a>
+                            </div>
+                            <div class="form-check mb-3" th:each="a, st : ${addresses}">
+                                <input class="form-check-input" type="radio" name="addressId"
+                                       th:id="'addr' + ${a.id}" th:value="${a.id}" th:checked="${st.first}">
+                                <label class="form-check-label" th:for="'addr' + ${a.id}">
+                                    <strong th:text="${a.receiverName}"></strong>
+                                    · <span th:text="${a.phone}"></span>
+                                    <span class="badge bg-danger ms-1" th:if="${a.defaultAddress}">Mặc định</span><br>
+                                    <span class="text-muted"
+                                          th:text="${a.detail} + ', ' + ${a.ward} + ', ' + ${a.province}"></span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card mb-4">
+                        <div class="card-header fw-bold">Đơn vị vận chuyển</div>
+                        <div class="card-body">
+                            <div th:if="${carriers.isEmpty()}" class="text-muted">
+                                Hiện chưa có đơn vị vận chuyển nào đang hoạt động.
+                            </div>
+                            <div class="form-check" th:each="c, st : ${carriers}">
+                                <input class="form-check-input carrier" type="radio" name="carrierId"
+                                       th:id="'car' + ${c.id}" th:value="${c.id}"
+                                       th:attr="data-fee=${c.shippingFee.longValue()}" th:checked="${st.first}">
+                                <label class="form-check-label" th:for="'car' + ${c.id}">
+                                    <span th:text="${c.name}"></span> -
+                                    <span th:text="${#numbers.formatInteger(c.shippingFee, 0, 'POINT')} + ' đ / shop'"></span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card mb-4">
+                        <div class="card-header fw-bold">Phương thức thanh toán</div>
+                        <div class="card-body">
+                            <div class="form-check">
+						        <input class="form-check-input" type="radio" name="payment" id="payCod" value="COD" checked>
+						        <label class="form-check-label" for="payCod">Thanh toán khi nhận hàng (COD)</label>
+						    </div>
+						    <div class="form-check">
+						        <input class="form-check-input" type="radio" name="payment" id="payVnpay" value="VNPAY"
+						               th:disabled="${!vnpayEnabled}">
+						        <label class="form-check-label" for="payVnpay"
+						               th:text="${vnpayEnabled} ? 'VNPAY (thanh toán online)' : 'VNPAY (chưa cấu hình)'"></label>
+						    </div>
+						    <div class="form-text" th:if="${vnpayEnabled}">
+						        Giỏ hàng nhiều shop sẽ tạo nhiều đơn, mỗi đơn thanh toán VNPAY riêng.
+						    </div>
+                        </div>
+                    </div>
+
+                    <div class="card mb-4" th:each="s : ${shops}">
+                        <div class="card-header fw-bold" th:text="${s.shopName}"></div>
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between mb-2" th:each="l : ${s.lines}">
+                                <span th:text="${l.name} + ' × ' + ${l.quantity}"></span>
+                                <span th:text="${#numbers.formatInteger(l.lineTotal, 0, 'POINT')} + ' đ'"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-4">
+                    <div class="card" id="summary"
+                         th:attr="data-subtotal=${subtotal.longValue()}, data-shops=${shopCount}">
+                        <div class="card-header fw-bold">Tóm tắt đơn hàng</div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <input type="text" name="voucher" class="form-control" placeholder="Mã giảm giá (nếu có)">
+                                <div class="form-text">Mã được kiểm tra và trừ tiền khi bạn bấm Đặt hàng.</div>
+                            </div>
+                            <div class="d-flex justify-content-between">
+                                <span>Tiền hàng</span>
+                                <span th:text="${#numbers.formatInteger(subtotal, 0, 'POINT')} + ' đ'"></span>
+                            </div>
+                            <div class="d-flex justify-content-between">
+                                <span>Phí vận chuyển</span>
+                                <span id="ship-fee"
+                                      th:text="${#numbers.formatInteger(shippingFee, 0, 'POINT')} + ' đ'"></span>
+                            </div>
+                            <hr>
+                            <div class="d-flex justify-content-between fs-5">
+                                <span>Tổng cộng</span>
+                                <span id="grand-total" class="text-danger fw-bold"
+                                      th:text="${#numbers.formatInteger(total, 0, 'POINT')} + ' đ'"></span>
+                            </div>
+                            <button class="btn btn-danger w-100 mt-3" type="submit"
+                                    th:disabled="${addresses.isEmpty() or carriers.isEmpty()}">Đặt hàng</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        function fmt(n) { return n.toLocaleString('vi-VN') + ' đ'; }
+        const summary = document.getElementById('summary');
+        const subtotal = parseInt(summary.dataset.subtotal, 10);
+        const shopCount = parseInt(summary.dataset.shops, 10);
+
+        function recalc() {
+            const checked = document.querySelector('.carrier:checked');
+            const fee = checked ? parseInt(checked.dataset.fee, 10) * shopCount : 0;
+            document.getElementById('ship-fee').textContent = fmt(fee);
+            document.getElementById('grand-total').textContent = fmt(subtotal + fee);
+        }
+        document.querySelectorAll('.carrier').forEach(function (el) {
+            el.addEventListener('change', recalc);
+        });
+    </script>
+</body>
+</html>
