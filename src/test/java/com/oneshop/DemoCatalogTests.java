@@ -38,6 +38,11 @@ class DemoCatalogTests {
                         && productImages.get(0).getUrl().startsWith("https://");
             }), categoryName);
         }
-        assertEquals(18, images.count());
+    }
+
+    @Test
+    void demoCatalogHasThirtyProductsIncludingNinePrestigeSkincareItems() {
+        assertEquals(30, products.count());
+        assertEquals(27, images.count());
     }
 }

@@ -53,6 +53,7 @@ public class DemoSeeder implements CommandLineRunner {
                         .brand("Lumière").description("Làm sạch nhẹ nhàng mỗi ngày.")
                         .price(new BigDecimal("179000")).stock(42).sold(31).build()));
         seedHighEndMakeup(shop);
+        seedSkincareProducts(shop);
         Order order = orders.save(com.oneshop.entity.Order.builder().user(buyer).shop(shop)
                 .addressSnapshot("12 Lê Lợi, Quận 1, TP.HCM").status(OrderStatus.NEW)
                 .subtotal(new BigDecimal("578000")).shippingFee(new BigDecimal("22000"))
@@ -120,6 +121,41 @@ public class DemoSeeder implements CommandLineRunner {
                 "https://www.patmcgrath.com/cdn/shop/products/20200820_PMG_EYE_MS7_COLORUPDATE_1200x1200_fea94766-3282-4136-b286-7e5c363f1b52.jpg?v=1629943395");
         sample(shop, eyePalette, "Pat McGrath Mothership X Moonlit Seduction", "Pat McGrath Labs", "Bảng mắt Mothership X Moonlit Seduction.", "3350000", 5,
                 "https://www.patmcgrath.com/cdn/shop/products/PMG_EYE_MSX_COMP_OPEN_1200x1200_ca7ce8df-d2d7-42d5-bf6f-e03090cc8f39.jpg?v=1658425123");
+    }
+
+    private void seedSkincareProducts(Shop shop) {
+        Category skincare = categories.findFirstByNameIgnoreCaseAndParentIsNull("Chăm sóc da").orElseThrow();
+        Category serum = categories.findFirstByNameIgnoreCaseAndParentId("Serum", skincare.getId()).orElseThrow();
+        Category toner = categories.findFirstByNameIgnoreCaseAndParentId("Toner", skincare.getId()).orElseThrow();
+        Category moisturizer = categories.findFirstByNameIgnoreCaseAndParentId("Kem dưỡng", skincare.getId()).orElseThrow();
+
+        sample(shop, serum, "Estée Lauder Advanced Night Repair 50ml", "Estée Lauder",
+                "Tinh chất phục hồi Advanced Night Repair.", "3850000", 12,
+                "https://image-optimizer-reg.production.sephora-asia.net/images/product_images/1_Product_887167485471-Estee-Lauder-Advanced-Night-Repair-Synchronized-Multi-Recovery-Comp_83011875ff56c5dc39892067fb3135b4e3c50b4e_1594109746.png");
+        sample(shop, toner, "SK-II PITERA Facial Treatment Essence 230ml", "SK-II",
+                "Nước thần PITERA Facial Treatment Essence.", "5850000", 9,
+                "https://image-optimizer-reg.production.sephora-asia.net/images/product_images/1_Product_4979006070088-SKII-Treatment-Essence-75ml-Updated_d1db969be2ce480f93e954227a82e80340ba8c61_1715080580.png");
+        sample(shop, moisturizer, "La Mer Crème de la Mer 60ml", "La Mer",
+                "Kem dưỡng ẩm Crème de la Mer.", "9800000", 5,
+                "https://i8.amplience.net/i/liberty/000795969-R543094006-1?%24medium%24=&fmt=auto&qlt=90&strip=true");
+        sample(shop, moisturizer, "Kiehl's Ultra Facial Cream 125ml", "Kiehl's",
+                "Kem dưỡng ẩm Ultra Facial Cream.", "1750000", 12,
+                "https://images.ctfassets.net/a2zekjpkox83/6bhXaiCGJ5rWsCLLcP8fi7/34d193c7d40308febf05ab23fa5ce857/3605975028799_Kiehls_UltraFacialCream_125ml_DayCream_FrontPackShot_1500x1500px_Rosehip.png?fm=webp&q=75&w=2560");
+        sample(shop, serum, "Shiseido Ultimune Power Infusing Concentrate 50ml", "Shiseido",
+                "Tinh chất Ultimune Power Infusing Concentrate.", "3150000", 8,
+                "https://www.shiseido.id/dw/image/v2/BCSK_PRD/on/demandware.static/-/Sites-itemmaster_shiseido/in_ID/dw213906f8/images/shiseido_ECTW/1021728430/1021728430_50mL.png?sh=1400&sm=fit&sw=1400");
+        sample(shop, moisturizer, "Clinique Moisture Surge 100H 50ml", "Clinique",
+                "Gel dưỡng ẩm Moisture Surge 100H.", "1250000", 14,
+                "https://media.super-pharm.co.il/image/upload/w_auto%2Cq_auto%2Cf_auto/v1716129091/super-pharm-products/192333066928.jpg");
+        sample(shop, serum, "Clarins Double Serum 50ml", "Clarins",
+                "Tinh chất kép Double Serum.", "3650000", 7,
+                "https://escentual.com/cdn/shop/files/clarins_double_serum_complete_age-defying_concentrate_50ml_3666057202476.png?v=1729190335&width=1920");
+        sample(shop, serum, "Lancôme Advanced Génifique 50ml", "Lancôme",
+                "Tinh chất Advanced Génifique Youth Activating Concentrate.", "3200000", 10,
+                "https://www.lancome-usa.com/dw/image/v2/AANG_PRD/on/demandware.static/-/Sites-lancome-us-master-catalog/default/dw6fa42690/pdp/1000302/Advanced-Genifique-Serum_Sales-Claim_1000x1000.jpg?q=70&sfrm=jpg&sh=860&sm=cut&sw=860");
+        sample(shop, serum, "Dior Capture Totale Le Sérum 50ml", "Dior",
+                "Tinh chất Capture Totale Le Sérum.", "4900000", 6,
+                "https://image-optimizer-reg.production.sephora-asia.net/images/product_images/1_Product_3348901624022-DIOR-Capture-Totale-Le-Serum-75ml_40df2287a5904bf6780703f6293d69a6a435cecc_1695210128.png");
     }
 
     private void sample(Shop shop, Category category, String name, String brand, String description,
