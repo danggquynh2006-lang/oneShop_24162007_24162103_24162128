@@ -81,7 +81,15 @@ public class VendorProductService {
         ProductImage image = imageRepository.findById(imageId)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy ảnh."));
         if (!image.getProduct().getId().equals(productId)) throw new ResourceNotFoundException("Không tìm thấy ảnh.");
+        boolean removedMainImage = image.isMainImage();
         imageRepository.delete(image);
+        if (removedMainImage) {
+            imageRepository.findByProductIdOrderByMainImageDescIdAsc(productId).stream()
+                    .findFirst().ifPresent(replacement -> {
+                        replacement.setMainImage(true);
+                        imageRepository.save(replacement);
+                    });
+        }
     }
 
     private void apply(Product product, ProductForm form) {

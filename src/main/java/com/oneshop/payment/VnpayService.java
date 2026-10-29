@@ -101,6 +101,7 @@ public class VnpayService {
         if (success) {
             payment.setPaidAt(LocalDateTime.now());
             payment.setTransactionCode(params.get("vnp_TransactionNo"));
+            payment.setTransactionDate(params.get("vnp_PayDate"));
         }
         return new Result("00", success ? "Thanh toán thành công" : "Thanh toán không thành công", success);
     }

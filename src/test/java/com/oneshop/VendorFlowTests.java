@@ -14,7 +14,9 @@ import com.oneshop.promotion.PromotionService;
 import com.oneshop.repository.ShopRepository;
 import com.oneshop.repository.PromotionRepository;
 import com.oneshop.repository.ProductRepository;
+import com.oneshop.repository.ProductImageRepository;
 import com.oneshop.repository.OrderRepository;
+import com.oneshop.entity.ProductImage;
 import com.oneshop.vendor.VendorProductService;
 import com.oneshop.vendor.VendorOrderService;
 import com.oneshop.vendor.VendorRevenueService;
@@ -31,6 +33,7 @@ class VendorFlowTests {
     @Autowired private PromotionRepository promotionRepository;
     @Autowired private VendorRevenueService revenueService;
     @Autowired private ProductRepository productRepository;
+    @Autowired private ProductImageRepository productImageRepository;
     @Autowired private OrderRepository orderRepository;
     @Autowired private VendorProductService productService;
     @Autowired private VendorOrderService orderService;
@@ -85,5 +88,23 @@ class VendorFlowTests {
 
         assertEquals(25, productService.get(shopId, saved.getId()).getDiscountPercent());
         assertEquals(0, new BigDecimal("150000").compareTo(saved.getFinalPrice()));
+    }
+
+    @Test
+    void deletingMainProductImagePromotesAnotherImage() {
+        Long shopId = shopRepository.findAll().stream().filter(shop -> shop.getName().equals("Lumière Beauty"))
+                .findFirst().orElseThrow().getId();
+        var product = productRepository.findByShopIdAndNameContainingIgnoreCase(
+                shopId, "", org.springframework.data.domain.PageRequest.of(0, 1)).getContent().get(0);
+        var mainImage = productImageRepository.save(ProductImage.builder().product(product)
+                .url("https://example.test/main.jpg").mainImage(true).build());
+        productImageRepository.save(ProductImage.builder().product(product)
+                .url("https://example.test/secondary.jpg").mainImage(false).build());
+
+        productService.removeImage(shopId, product.getId(), mainImage.getId());
+
+        var remaining = productImageRepository.findByProductIdOrderByMainImageDescIdAsc(product.getId());
+        assertEquals(1, remaining.stream().filter(ProductImage::isMainImage).count());
+        assertTrue(remaining.get(0).isMainImage());
     }
 }

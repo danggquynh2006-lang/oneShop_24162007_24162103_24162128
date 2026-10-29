@@ -28,6 +28,7 @@ public class Payment {
     @Column(unique = true)
     private String reference;
     private String requestDate;
+    private String transactionDate;
     private String transactionCode;
     private LocalDateTime paidAt;
     private LocalDateTime refundRequestedAt;

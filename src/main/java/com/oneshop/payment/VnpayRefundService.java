@@ -21,6 +21,7 @@ import tools.jackson.core.type.TypeReference;
 import tools.jackson.databind.ObjectMapper;
 import com.oneshop.common.BusinessException;
 import com.oneshop.common.OrderStatus;
+import com.oneshop.common.PaymentMethod;
 import com.oneshop.common.PaymentStatus;
 import com.oneshop.entity.Order;
 import com.oneshop.entity.Payment;
@@ -48,8 +49,11 @@ public class VnpayRefundService {
         if ((order.getStatus() != OrderStatus.RETURNED && order.getStatus() != OrderStatus.CANCELLED)
                 || payment.getStatus() != PaymentStatus.REFUND_PENDING)
             throw new BusinessException("Đơn chưa đủ điều kiện hoàn tiền.");
+        if (payment.getMethod() != PaymentMethod.VNPAY)
+            throw new BusinessException("Chỉ giao dịch VNPAY mới được gửi yêu cầu hoàn qua VNPAY.");
         if (terminalCode.isBlank() || hashSecret.isBlank()) throw new BusinessException("Chưa cấu hình VNPAY sandbox.");
-        if (payment.getReference() == null || payment.getRequestDate() == null || payment.getTransactionCode() == null)
+        if (payment.getReference() == null || payment.getTransactionDate() == null
+                || payment.getTransactionCode() == null)
             throw new BusinessException("Thiếu thông tin giao dịch gốc để hoàn tiền.");
 
         Map<String, String> params = new LinkedHashMap<>();
@@ -63,7 +67,7 @@ public class VnpayRefundService {
         params.put("vnp_TxnRef", payment.getReference());
         params.put("vnp_Amount", payment.getAmount().multiply(BigDecimal.valueOf(100)).toBigIntegerExact().toString());
         params.put("vnp_TransactionNo", payment.getTransactionCode());
-        params.put("vnp_TransactionDate", payment.getRequestDate());
+        params.put("vnp_TransactionDate", payment.getTransactionDate());
         params.put("vnp_CreateBy", actor);
         params.put("vnp_CreateDate", LocalDateTime.now(ZoneId.of("Asia/Ho_Chi_Minh")).format(DATE));
         params.put("vnp_IpAddr", ipAddress);

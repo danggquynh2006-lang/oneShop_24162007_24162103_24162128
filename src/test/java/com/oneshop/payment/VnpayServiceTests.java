@@ -54,11 +54,13 @@ class VnpayServiceTests {
         callback.put("vnp_ResponseCode", "00");
         callback.put("vnp_TransactionStatus", "00");
         callback.put("vnp_TransactionNo", "12345");
+        callback.put("vnp_PayDate", "20261029160700");
         callback.put("vnp_SecureHash", VnpayService.hmac("sample-secret-for-tests", VnpayService.canonical(
                 callback.entrySet().stream().filter(entry -> !entry.getKey().equals("vnp_SecureHash"))
                         .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue)))));
         assertEquals("00", service.processCallback(callback).code());
         assertEquals(PaymentStatus.PAID, payment.getStatus());
+        assertEquals("20261029160700", payment.getTransactionDate());
         assertEquals("02", service.processCallback(callback).code());
         callback.put("vnp_Amount", "1");
         assertEquals("97", service.processCallback(callback).code());
