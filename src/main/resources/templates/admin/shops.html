@@ -1,30 +1,138 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org"><head><title>Quản lý shop</title></head><body>
-<div class="container py-4">
-  <h2>Quản lý shop</h2>
-  <div class="alert alert-success" th:if="${message}" th:text="${message}"></div>
-  <div class="alert alert-danger" th:if="${error}" th:text="${error}"></div>
-  <nav class="nav nav-pills my-3">
-    <a class="nav-link" th:each="state : ${T(com.oneshop.common.ShopStatus).values()}"
-       th:classappend="${state == currentStatus} ? 'active'"
-       th:href="@{/admin/shops(status=${state})}" th:text="${state}"></a>
-  </nav>
-  <div class="table-responsive"><table class="table table-striped align-middle">
-    <thead><tr><th>Shop</th><th>Chủ shop</th><th>Địa chỉ</th><th>Ngày tạo</th><th>Chiết khấu</th><th></th></tr></thead>
-    <tbody><tr th:each="shop : ${shops.content}">
-      <td><strong th:text="${shop.name}"></strong><div class="small text-muted" th:text="${shop.description}"></div></td>
-      <td th:text="${shop.owner.email}"></td><td th:text="${shop.address}"></td>
-      <td th:text="${#temporals.format(shop.createdAt, 'dd/MM/yyyy HH:mm')}"></td>
-      <td><form class="d-flex gap-2" th:action="@{/admin/shops/{id}/commission(id=${shop.id})}" method="post">
-        <input type="hidden" name="status" th:value="${currentStatus}">
-        <input class="form-control form-control-sm" style="width:100px" type="number" name="commissionRate"
-               min="0" max="100" step="0.01" required th:value="${shop.commissionRate}">
-        <button class="btn btn-sm btn-outline-primary">Lưu %</button>
-      </form></td>
-      <td><form th:if="${shop.status.name() == 'PENDING'}" th:action="@{/admin/shops/{id}/approve(id=${shop.id})}" method="post">
-        <button class="btn btn-sm btn-success">Duyệt</button>
-      </form></td>
-    </tr></tbody>
-  </table></div>
-  <p th:if="${shops.empty}">Không có shop ở trạng thái này.</p>
-</div></body></html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Quản lý shop</title>
+</head>
+<body>
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h3 class="mb-0">Quản lý shop</h3>
+    <span class="badge bg-warning text-dark fs-6" th:if="${pendingCount > 0}">
+        <i class="bi bi-hourglass-split"></i> <span th:text="${pendingCount}"></span> shop chờ duyệt
+    </span>
+</div>
+
+<div class="alert alert-success" th:if="${message}" th:text="${message}"></div>
+<div class="alert alert-danger" th:if="${error}" th:text="${error}"></div>
+
+<form th:action="@{/admin/shops}" method="get" class="row g-2 mb-3">
+    <div class="col-md-6">
+        <input type="text" name="keyword" class="form-control" placeholder="Tìm theo tên shop hoặc email chủ shop"
+               th:value="${keyword}">
+    </div>
+    <div class="col-md-4">
+        <select name="status" class="form-select">
+            <option value="">Tất cả trạng thái</option>
+            <option th:each="s : ${statuses}" th:value="${s}" th:selected="${s == status}"
+                    th:text="${s.name() == 'PENDING'} ? 'Chờ duyệt' : (${s.name() == 'ACTIVE'} ? 'Đang hoạt động' : 'Đã khóa')"></option>
+        </select>
+    </div>
+    <div class="col-md-2">
+        <button type="submit" class="btn btn-danger w-100"><i class="bi bi-search"></i> Tìm</button>
+    </div>
+</form>
+
+<p class="text-muted">Có <strong th:text="${shops.totalElements}"></strong> shop.</p>
+
+<div class="table-responsive">
+    <table class="table table-hover align-middle bg-white">
+        <thead class="table-light">
+        <tr>
+            <th>ID</th>
+            <th>Shop</th>
+            <th>Chủ shop</th>
+            <th>Địa chỉ</th>
+            <th style="width:190px">Chiết khấu sàn (%)</th>
+            <th>Trạng thái</th>
+            <th class="text-end">Thao tác</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:if="${shops.empty}">
+            <td colspan="7" class="text-center text-muted py-4">Không có shop nào.</td>
+        </tr>
+        <tr th:each="shop : ${shops.content}">
+            <td th:text="${shop.id}"></td>
+            <td>
+                <div class="d-flex align-items-center gap-2">
+                    <img th:if="${shop.logo}" th:src="${shop.logo}" alt="Logo shop"
+                         class="rounded border" style="width:40px;height:40px;object-fit:cover">
+                    <i th:unless="${shop.logo}" class="bi bi-shop text-secondary fs-3"></i>
+                    <strong th:text="${shop.name}"></strong>
+                </div>
+            </td>
+            <td th:text="${shop.owner.email}"></td>
+            <td th:text="${shop.address}"></td>
+            <td>
+                <form th:action="@{/admin/shops/{id}/commission(id=${shop.id})}" method="post"
+                      class="d-flex gap-1">
+                    <input type="hidden" name="keyword" th:value="${keyword}">
+                    <input type="hidden" name="status" th:value="${status}">
+                    <input type="hidden" name="page" th:value="${shops.number}">
+                    <input type="number" name="rate" class="form-control form-control-sm"
+                           min="0" max="100" step="0.01" required th:value="${shop.commissionRate}">
+                    <button type="submit" class="btn btn-sm btn-outline-secondary">Lưu</button>
+                </form>
+            </td>
+            <td>
+                <span class="badge bg-warning text-dark" th:if="${shop.status.name() == 'PENDING'}">Chờ duyệt</span>
+                <span class="badge bg-success" th:if="${shop.status.name() == 'ACTIVE'}">Hoạt động</span>
+                <span class="badge bg-danger" th:if="${shop.status.name() == 'LOCKED'}">Đã khóa</span>
+            </td>
+            <td class="text-end">
+                <div class="d-flex gap-2 justify-content-end">
+                    <th:block th:if="${shop.status.name() == 'PENDING'}">
+                        <form th:action="@{/admin/shops/{id}/approve(id=${shop.id})}" method="post">
+                            <input type="hidden" name="keyword" th:value="${keyword}">
+                            <input type="hidden" name="status" th:value="${status}">
+                            <input type="hidden" name="page" th:value="${shops.number}">
+                            <button type="submit" class="btn btn-sm btn-success">Duyệt</button>
+                        </form>
+                        <form th:action="@{/admin/shops/{id}/reject(id=${shop.id})}" method="post"
+                              onsubmit="return confirm('Từ chối đăng ký shop này?')">
+                            <input type="hidden" name="keyword" th:value="${keyword}">
+                            <input type="hidden" name="status" th:value="${status}">
+                            <input type="hidden" name="page" th:value="${shops.number}">
+                            <button type="submit" class="btn btn-sm btn-outline-danger">Từ chối</button>
+                        </form>
+                    </th:block>
+                    <form th:if="${shop.status.name() == 'ACTIVE'}"
+                          th:action="@{/admin/shops/{id}/lock(id=${shop.id})}" method="post"
+                          onsubmit="return confirm('Khóa shop này? Vendor sẽ không thể quản lý shop.')">
+                        <input type="hidden" name="keyword" th:value="${keyword}">
+                        <input type="hidden" name="status" th:value="${status}">
+                        <input type="hidden" name="page" th:value="${shops.number}">
+                        <button type="submit" class="btn btn-sm btn-outline-warning">Khóa</button>
+                    </form>
+                    <form th:if="${shop.status.name() == 'LOCKED'}"
+                          th:action="@{/admin/shops/{id}/unlock(id=${shop.id})}" method="post">
+                        <input type="hidden" name="keyword" th:value="${keyword}">
+                        <input type="hidden" name="status" th:value="${status}">
+                        <input type="hidden" name="page" th:value="${shops.number}">
+                        <button type="submit" class="btn btn-sm btn-outline-success">Mở khóa</button>
+                    </form>
+                </div>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+
+<nav th:if="${shops.totalPages > 1}">
+    <ul class="pagination">
+        <li class="page-item" th:classappend="${shops.first} ? 'disabled'">
+            <a class="page-link"
+               th:href="@{/admin/shops(keyword=${keyword},status=${status},page=${shops.number - 1})}">Trước</a>
+        </li>
+        <li class="page-item" th:each="p : ${#numbers.sequence(0, shops.totalPages - 1)}"
+            th:classappend="${p == shops.number} ? 'active'">
+            <a class="page-link" th:text="${p + 1}"
+               th:href="@{/admin/shops(keyword=${keyword},status=${status},page=${p})}"></a>
+        </li>
+        <li class="page-item" th:classappend="${shops.last} ? 'disabled'">
+            <a class="page-link"
+               th:href="@{/admin/shops(keyword=${keyword},status=${status},page=${shops.number + 1})}">Sau</a>
+        </li>
+    </ul>
+</nav>
+</body>
+</html>

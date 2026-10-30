@@ -1,30 +1,120 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org"><head><title>Khuyến mãi toàn sàn</title></head><body>
-<div class="container py-4">
-  <div class="d-flex justify-content-between align-items-center mb-3">
-    <h2>Khuyến mãi toàn sàn</h2><a class="btn btn-danger" th:href="@{/admin/promotions/new}">Tạo khuyến mãi</a>
-  </div>
-  <div class="alert alert-success" th:if="${message}" th:text="${message}"></div>
-  <div class="alert alert-danger" th:if="${error}" th:text="${error}"></div>
-  <div class="table-responsive"><table class="table table-striped align-middle">
-    <thead><tr><th>Mã</th><th>Chương trình</th><th>Loại giảm</th><th>Giá trị</th><th>Thời hạn</th><th>Lượt</th><th>Trạng thái</th><th>Thao tác</th></tr></thead>
-    <tbody>
-      <tr th:if="${promotions.empty}"><td colspan="8" class="text-center text-muted">Chưa có khuyến mãi toàn sàn.</td></tr>
-      <tr th:each="p : ${promotions.content}">
-        <td><strong th:text="${p.code}"></strong></td><td th:text="${p.name}"></td>
-        <td th:text="${p.type}"></td>
-        <td th:text="${p.type.name() == 'PERCENT_PRODUCT' ? p.value + '%' : #numbers.formatDecimal(p.value,0,'POINT',0,'COMMA') + ' đ'}"></td>
-        <td class="small"><span th:text="${#temporals.format(p.startAt,'dd/MM/yyyy HH:mm')}"></span><br><span th:text="${#temporals.format(p.endAt,'dd/MM/yyyy HH:mm')}"></span></td>
-        <td th:text="${p.used} + '/' + ${p.quantity}"></td><td th:text="${p.active ? 'Đang bật' : 'Đã tắt'}"></td>
-        <td class="d-flex gap-2">
-          <a class="btn btn-sm btn-outline-primary" th:href="@{/admin/promotions/{id}/edit(id=${p.id})}">Sửa</a>
-          <form th:action="@{/admin/promotions/{id}/toggle(id=${p.id})}" method="post"><button class="btn btn-sm btn-outline-warning" th:text="${p.active ? 'Tắt' : 'Bật'}"></button></form>
-          <form th:action="@{/admin/promotions/{id}/delete(id=${p.id})}" method="post" onsubmit="return confirm('Xóa mã này?')"><button class="btn btn-sm btn-outline-danger">Xóa</button></form>
-        </td>
-      </tr>
-    </tbody>
-  </table></div>
-  <nav th:if="${promotions.totalPages > 1}" class="d-flex gap-2">
-    <a class="btn btn-sm btn-outline-secondary" th:each="p : ${#numbers.sequence(0,promotions.totalPages - 1)}" th:href="@{/admin/promotions(page=${p})}" th:text="${p+1}"></a>
-  </nav>
-</div></body></html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Quản lý khuyến mãi</title>
+</head>
+<body>
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h3 class="mb-0">Quản lý khuyến mãi</h3>
+    <a th:href="@{/admin/promotions/new}" class="btn btn-danger"><i class="bi bi-plus-lg"></i> Tạo khuyến mãi toàn sàn</a>
+</div>
+
+<div class="alert alert-success" th:if="${message}" th:text="${message}"></div>
+<div class="alert alert-danger" th:if="${error}" th:text="${error}"></div>
+
+<div class="d-flex flex-wrap gap-2 mb-3">
+    <a class="btn btn-sm" th:href="@{/admin/promotions}"
+       th:classappend="${scope == null} ? 'btn-danger' : 'btn-outline-secondary'">Tất cả</a>
+    <a class="btn btn-sm" th:href="@{/admin/promotions(scope='PLATFORM')}"
+       th:classappend="${scope != null and scope.name() == 'PLATFORM'} ? 'btn-danger' : 'btn-outline-secondary'">Toàn sàn</a>
+    <a class="btn btn-sm" th:href="@{/admin/promotions(scope='SHOP')}"
+       th:classappend="${scope != null and scope.name() == 'SHOP'} ? 'btn-danger' : 'btn-outline-secondary'">Của các shop</a>
+</div>
+
+<p class="text-muted">Có <strong th:text="${promotions.totalElements}"></strong> khuyến mãi.</p>
+
+<div class="table-responsive">
+    <table class="table table-hover align-middle bg-white">
+        <thead class="table-light">
+        <tr>
+            <th>Mã</th>
+            <th>Phạm vi</th>
+            <th>Loại</th>
+            <th class="text-end">Giá trị</th>
+            <th class="text-end d-none d-lg-table-cell">Đơn tối thiểu</th>
+            <th class="d-none d-lg-table-cell">Thời gian</th>
+            <th class="text-end">Đã dùng</th>
+            <th>Trạng thái</th>
+            <th class="text-end">Thao tác</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:if="${promotions.empty}">
+            <td colspan="9" class="text-center text-muted py-4">Chưa có khuyến mãi nào.</td>
+        </tr>
+        <tr th:each="p : ${promotions.content}">
+            <td>
+                <strong th:text="${p.code}"></strong>
+                <div class="small text-muted" th:text="${p.name}"></div>
+            </td>
+            <td>
+                <span class="badge bg-danger" th:if="${p.scope.name() == 'PLATFORM'}">Toàn sàn</span>
+                <span th:if="${p.scope.name() == 'SHOP'}" th:text="'Shop: ' + ${p.shop.name}"></span>
+            </td>
+            <td>
+                <span th:if="${p.type.name() == 'PERCENT_PRODUCT'}">Giảm %</span>
+                <span th:if="${p.type.name() == 'FIXED_AMOUNT'}">Giảm tiền</span>
+                <span th:if="${p.type.name() == 'SHIPPING_DISCOUNT'}">Giảm phí ship</span>
+            </td>
+            <td class="text-end">
+                <span th:if="${p.type.name() == 'PERCENT_PRODUCT'}"
+                      th:text="${p.value.stripTrailingZeros().toPlainString()} + '%'"></span>
+                <span th:unless="${p.type.name() == 'PERCENT_PRODUCT'}"
+                      th:text="${#numbers.formatDecimal(p.value, 0, 'POINT', 0, 'COMMA')} + 'đ'"></span>
+            </td>
+            <td class="text-end d-none d-lg-table-cell"
+                th:text="${#numbers.formatDecimal(p.minOrder, 0, 'POINT', 0, 'COMMA')} + 'đ'"></td>
+            <td class="small d-none d-lg-table-cell">
+                <span th:text="${#temporals.format(p.startAt, 'dd/MM/yyyy HH:mm')}"></span><br>
+                <span th:text="${#temporals.format(p.endAt, 'dd/MM/yyyy HH:mm')}"></span>
+            </td>
+            <td class="text-end" th:text="${p.used} + '/' + ${p.quantity}"></td>
+            <td>
+                <span class="badge bg-secondary" th:unless="${p.active}">Đã tắt</span>
+                <span class="badge bg-dark"
+                      th:if="${p.active and p.endAt.isBefore(#temporals.createNow())}">Hết hạn</span>
+                <span class="badge bg-warning text-dark"
+                      th:if="${p.active and p.startAt.isAfter(#temporals.createNow())}">Chưa bắt đầu</span>
+                <span class="badge bg-success"
+                      th:if="${p.active and !p.endAt.isBefore(#temporals.createNow()) and !p.startAt.isAfter(#temporals.createNow())}">Đang chạy</span>
+            </td>
+            <td class="text-end">
+                <div class="d-flex gap-2 justify-content-end">
+                    <a th:if="${p.scope.name() == 'PLATFORM'}" th:href="@{/admin/promotions/{id}/edit(id=${p.id})}"
+                       class="btn btn-sm btn-outline-secondary">Sửa</a>
+                    <form th:action="@{/admin/promotions/{id}/toggle(id=${p.id})}" method="post">
+                        <input type="hidden" name="scope" th:value="${scope}">
+                        <input type="hidden" name="page" th:value="${promotions.number}">
+                        <button type="submit" class="btn btn-sm btn-outline-warning"
+                                th:text="${p.active} ? 'Tắt' : 'Bật'"></button>
+                    </form>
+                    <form th:if="${p.scope.name() == 'PLATFORM'}"
+                          th:action="@{/admin/promotions/{id}/delete(id=${p.id})}" method="post"
+                          onsubmit="return confirm('Xóa khuyến mãi này?')">
+                        <input type="hidden" name="scope" th:value="${scope}">
+                        <input type="hidden" name="page" th:value="${promotions.number}">
+                        <button type="submit" class="btn btn-sm btn-outline-danger">Xóa</button>
+                    </form>
+                </div>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+
+<nav th:if="${promotions.totalPages > 1}">
+    <ul class="pagination">
+        <li class="page-item" th:classappend="${promotions.first} ? 'disabled'">
+            <a class="page-link" th:href="@{/admin/promotions(scope=${scope},page=${promotions.number - 1})}">Trước</a>
+        </li>
+        <li class="page-item" th:each="n : ${#numbers.sequence(0, promotions.totalPages - 1)}"
+            th:classappend="${n == promotions.number} ? 'active'">
+            <a class="page-link" th:text="${n + 1}" th:href="@{/admin/promotions(scope=${scope},page=${n})}"></a>
+        </li>
+        <li class="page-item" th:classappend="${promotions.last} ? 'disabled'">
+            <a class="page-link" th:href="@{/admin/promotions(scope=${scope},page=${promotions.number + 1})}">Sau</a>
+        </li>
+    </ul>
+</nav>
+</body>
+</html>

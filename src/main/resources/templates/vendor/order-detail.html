@@ -7,7 +7,37 @@
 <p class="text-end fs-5">Tổng: <strong class="text-danger" th:text="${#numbers.formatDecimal(order.total,0,'POINT',0,'COMMA')} + ' đ'"></strong></p>
 <div class="mb-3" th:if="${order.status.name() != 'NEW' and order.status.name() != 'CANCELLED'}"><a class="btn btn-outline-secondary" th:href="@{/vendor/orders/{id}/slip(id=${order.id})}" target="_blank"><i class="bi bi-printer"></i> In phiếu giao</a></div>
 <div class="d-flex gap-2" th:if="${order.status.name() == 'NEW'}"><form th:action="@{/vendor/orders/{id}/confirm(id=${order.id})}" method="post"><button class="btn btn-success">Xác nhận</button></form><form th:action="@{/vendor/orders/{id}/reject(id=${order.id})}" method="post"><button class="btn btn-outline-danger">Từ chối</button></form></div>
-<div class="d-flex gap-2" th:if="${order.status.name() == 'RETURN_REQUESTED'}"><form th:action="@{/vendor/orders/{id}/return(id=${order.id})}" method="post"><input type="hidden" name="accept" value="true"><button class="btn btn-danger">Duyệt trả hàng</button></form><form th:action="@{/vendor/orders/{id}/return(id=${order.id})}" method="post"><input type="hidden" name="accept" value="false"><button class="btn btn-outline-secondary">Từ chối</button></form></div>
+<div class="card card-body mb-3" th:if="${returnRequest != null}">
+    <h5>Yêu cầu trả hàng của khách</h5>
+    <p class="mb-1">Lý do: <strong th:text="${returnRequest.reason}"></strong></p>
+    <p class="mb-1" th:if="${returnRequest.note != null}" style="white-space: pre-line"
+       th:text="${returnRequest.note}"></p>
+    <p class="mb-1 text-muted small"
+       th:text="'Gửi lúc ' + ${#temporals.format(returnRequest.createdAt, 'dd/MM/yyyy HH:mm')}"></p>
+    <p class="mb-1">Trạng thái:
+        <span class="badge bg-warning text-dark" th:if="${returnRequest.effectiveStatus.name() == 'PENDING'}">Chờ xử lý</span>
+        <span class="badge bg-success" th:if="${returnRequest.effectiveStatus.name() == 'APPROVED'}">Đã chấp nhận</span>
+        <span class="badge bg-danger" th:if="${returnRequest.effectiveStatus.name() == 'REJECTED'}">Đã từ chối</span>
+    </p>
+    <p class="mb-0 text-danger"
+       th:if="${returnRequest.effectiveStatus.name() == 'REJECTED' and returnRequest.responseNote != null}"
+       th:text="'Lý do từ chối: ' + ${returnRequest.responseNote}"></p>
+</div>
+<div class="row g-2" th:if="${order.status.name() == 'RETURN_REQUESTED'}">
+    <div class="col-md-4">
+        <form th:action="@{/vendor/orders/{id}/return(id=${order.id})}" method="post">
+            <input type="hidden" name="accept" value="true">
+            <button class="btn btn-danger w-100">Duyệt trả hàng</button>
+        </form>
+    </div>
+    <div class="col-md-8">
+        <form th:action="@{/vendor/orders/{id}/return(id=${order.id})}" method="post">
+            <input type="hidden" name="accept" value="false">
+            <textarea name="note" class="form-control mb-2" rows="2" required minlength="5" maxlength="500"
+                      placeholder="Lý do từ chối (bắt buộc, gửi cho khách)"></textarea>
+            <button class="btn btn-outline-secondary">Từ chối yêu cầu</button>
+        </form>
+    </div>
 <div th:if="${payment != null and payment.status.name() == 'REFUND_PENDING'}" class="alert alert-warning mt-3">Khoản hoàn tiền đang chờ gửi đến VNPAY hoặc xử lý thủ công cho COD.
     <form th:if="${payment.method.name() == 'VNPAY'}" th:action="@{/vendor/orders/{id}/refund(id=${order.id})}" method="post" class="mt-2"><button class="btn btn-warning">Gửi yêu cầu hoàn tiền VNPAY</button></form>
     <form th:if="${payment.method.name() == 'COD'}" th:action="@{/vendor/orders/{id}/cash-refund(id=${order.id})}" method="post" class="mt-2"><button class="btn btn-warning">Xác nhận đã hoàn tiền mặt</button></form>

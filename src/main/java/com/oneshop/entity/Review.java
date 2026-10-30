@@ -1,47 +1,50 @@
 package com.oneshop.entity;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.PrePersist;
-import jakarta.persistence.Table;
-import jakarta.persistence.UniqueConstraint;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import jakarta.persistence.*;
+import lombok.*;
 
+/**
+ * Đánh giá sản phẩm. Mỗi người chỉ đánh giá 1 lần / sản phẩm (unique user + product),
+ * và chỉ khi đã mua + đơn đã giao (kiểm tra ở ReviewService).
+ */
 @Entity
-@Table(name = "reviews", uniqueConstraints = @UniqueConstraint(columnNames = {"product_id", "user_id"}))
+@Table(name = "reviews",
+       uniqueConstraints = @UniqueConstraint(columnNames = {"user_id", "product_id"}))
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
 public class Review {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "product_id", nullable = false)
-    private Product product;
-
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "product_id", nullable = false)
+    private Product product;
+
+    /** Dòng đơn hàng đã giao dùng làm bằng chứng đã mua. */
+    @OneToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "order_item_id", nullable = false, unique = true)
+    private OrderItem orderItem;
+
+    /** 1 - 5 sao. */
     @Column(nullable = false)
     private int rating;
 
-    @Column(length = 2000)
-    private String comment;
+    /** Tối thiểu 50 ký tự (kiểm tra ở form và ở service). */
+    @Column(nullable = false, length = 2000)
+    private String content;
 
-    @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
+
+    @OneToMany(mappedBy = "review", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<ReviewMedia> media = new ArrayList<>();
 
     @PrePersist
     void onCreate() {

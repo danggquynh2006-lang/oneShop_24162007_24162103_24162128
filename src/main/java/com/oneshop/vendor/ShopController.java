@@ -1,7 +1,6 @@
 package com.oneshop.vendor;
 
 import java.io.IOException;
-import java.math.BigDecimal;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -13,7 +12,6 @@ import com.oneshop.common.BusinessException;
 import com.oneshop.common.ResourceNotFoundException;
 import com.oneshop.common.ShopStatus;
 import com.oneshop.entity.Shop;
-import com.oneshop.home.ProductImageService;
 import com.oneshop.repository.ProductRepository;
 import com.oneshop.repository.ShopRepository;
 import jakarta.validation.Valid;
@@ -24,7 +22,6 @@ public class ShopController {
     private final ShopService shopService;
     private final ShopRepository shopRepository;
     private final ProductRepository productRepository;
-    private final ProductImageService productImageService;
 
     @GetMapping("/shop/register")
     public String registration(Model model) {
@@ -79,36 +76,7 @@ public class ShopController {
         Shop shop = shopRepository.findByIdAndStatus(id, ShopStatus.ACTIVE)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy shop."));
         model.addAttribute("shop", shop);
-        var catalog = productRepository.findByShopIdAndActiveTrue(id, PageRequest.of(0, 24));
-        model.addAttribute("products", catalog);
-        model.addAttribute("imageUrls", productImageService.mainUrls(catalog.getContent()));
+        model.addAttribute("products", productRepository.findByShopIdAndActiveTrue(id, PageRequest.of(0, 12)));
         return "web/shop";
-    }
-
-    @GetMapping("/admin/shops")
-    public String pending(@RequestParam(defaultValue = "PENDING") ShopStatus status, Model model) {
-        model.addAttribute("shops", shopRepository.findByStatus(status, PageRequest.of(0, 50)));
-        model.addAttribute("currentStatus", status);
-        return "admin/shops";
-    }
-
-    @PostMapping("/admin/shops/{id}/approve")
-    public String approve(@PathVariable Long id) {
-        shopService.approve(id);
-        return "redirect:/admin/shops";
-    }
-
-    @PostMapping("/admin/shops/{id}/commission")
-    public String commission(@PathVariable Long id, @RequestParam BigDecimal commissionRate,
-                             @RequestParam(defaultValue = "PENDING") ShopStatus status,
-                             org.springframework.web.servlet.mvc.support.RedirectAttributes redirect) {
-        try {
-            shopService.updateCommission(id, commissionRate);
-            redirect.addFlashAttribute("message", "Đã cập nhật tỷ lệ chiết khấu.");
-        } catch (BusinessException exception) {
-            redirect.addFlashAttribute("error", exception.getMessage());
-        }
-        redirect.addAttribute("status", status);
-        return "redirect:/admin/shops";
     }
 }

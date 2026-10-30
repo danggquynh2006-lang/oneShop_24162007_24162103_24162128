@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Top 20 sản phẩm - OneShop</title>
+</head>
+<body>
+    <div class="container my-4">
+        <h3 class="mb-3">Top 20 sản phẩm</h3>
+
+        <ul class="nav nav-tabs mb-4">
+            <li class="nav-item" th:each="t : ${tabs}">
+                <a class="nav-link" th:classappend="${t == current} ? 'active'"
+                   th:href="@{/top20(tab=${t.name()})}" th:text="${t.label}"></a>
+            </li>
+        </ul>
+
+        <div class="row">
+            <div class="col-6 col-md-3 mb-4" th:each="p : ${items}">
+                <div class="card h-100">
+                <div th:replace="~{web/thumb :: thumb(${p.image}, ${p.name})}"></div>
+                    <div class="card-body">
+                        <h6 class="card-title">
+                            <a th:href="@{/product/{id}(id=${p.id})}" class="stretched-link text-decoration-none"
+                               th:text="${p.name}"></a>
+                        </h6>
+                        <div class="text-danger fw-bold"
+                             th:text="${#numbers.formatInteger(p.price, 0, 'POINT')} + ' đ'"></div>
+                        <div><small class="text-muted"
+                                    th:text="'Đã bán ' + ${p.sold} + ' · ★ ' + ${#numbers.formatDecimal(p.rating, 1, 1)}"></small></div>
+                        <small class="text-muted" th:text="'♥ ' + ${p.favorites} + ' lượt thích'"></small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <nav th:if="${totalPages > 1}">
+            <ul class="pagination">
+                <li class="page-item" th:classappend="${page == 0} ? 'disabled'">
+                    <a class="page-link" th:href="@{/top20(tab=${current.name()}, page=${page - 1})}">Trước</a>
+                </li>
+                <li class="page-item" th:each="i : ${#numbers.sequence(0, totalPages - 1)}"
+                    th:classappend="${i == page} ? 'active'">
+                    <a class="page-link" th:href="@{/top20(tab=${current.name()}, page=${i})}"
+                       th:text="${i + 1}"></a>
+                </li>
+                <li class="page-item" th:classappend="${page >= totalPages - 1} ? 'disabled'">
+                    <a class="page-link" th:href="@{/top20(tab=${current.name()}, page=${page + 1})}">Sau</a>
+                </li>
+            </ul>
+        </nav>
+    </div>
+</body>
+</html>
