@@ -26,8 +26,12 @@ import lombok.RequiredArgsConstructor;
 public class ShipperOrderController {
 
     /** Các tab trạng thái hiển thị cho shipper. */
-    private static final List<OrderStatus> TABS = List.of(OrderStatus.CONFIRMED, OrderStatus.PICKED_UP,
-            OrderStatus.SHIPPING, OrderStatus.DELIVERED, OrderStatus.CANCELLED);
+    private static final List<OrderStatus> TABS = List.of(
+            OrderStatus.READY_TO_SHIP,
+            OrderStatus.PICKED_UP,
+            OrderStatus.SHIPPING,
+            OrderStatus.DELIVERED,
+            OrderStatus.CANCELLED);
 
     private final ShipperOrderService orderService;
 
@@ -100,7 +104,8 @@ public class ShipperOrderController {
                              @RequestParam(required = false) Integer month, Model model) {
         LocalDate today = LocalDate.now();
         model.addAttribute("stats", orderService.statistics(shipperId(),
-                year == null ? today.getYear() : year, month == null ? today.getMonthValue() : month));
+                year == null ? today.getYear() : year,
+                month == null ? today.getMonthValue() : month));
         return "shipper/statistics";
     }
 

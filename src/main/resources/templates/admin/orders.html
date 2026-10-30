@@ -1,89 +1,102 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
+    <meta charset="UTF-8"/>
     <title>Quản lý đơn hàng</title>
+    <link rel="stylesheet" th:href="@{/css/oneshop.css}"/>
 </head>
 <body>
-<h3 class="mb-3">Quản lý đơn hàng</h3>
+<div class="container py-4">
+    <h2 class="mb-3">Đơn hàng</h2>
 
-<div class="alert alert-success" th:if="${message}" th:text="${message}"></div>
-<div class="alert alert-danger" th:if="${error}" th:text="${error}"></div>
+    <div th:if="${param.error}" class="alert alert-danger" th:text="${param.error}"></div>
+    <div th:if="${param.success}" class="alert alert-success" th:text="${param.success}"></div>
 
-<form th:action="@{/admin/orders}" method="get" class="row g-2 mb-3">
-    <div class="col-md-10">
-        <select name="status" class="form-select">
-            <option value="">Tất cả trạng thái</option>
-            <option th:each="s : ${statuses}" th:value="${s}" th:selected="${s == status}"
-                    th:text="${s.label}"></option>
-        </select>
+    <!-- Filter -->
+    <form method="get" th:action="@{/admin/orders}" class="row g-2 mb-3 align-items-end">
+        <div class="col-auto">
+            <label class="form-label">Trạng thái</label>
+            <select name="status" class="form-select">
+                <option value="">Tất cả</option>
+                <option th:each="st : ${T(com.oneshop.common.OrderStatus).values()}"
+                        th:value="${st.name()}"
+                        th:text="${st.label}"
+                        th:selected="${status != null and status.name() == st.name()}"></option>
+            </select>
+        </div>
+        <div class="col-auto form-check mt-4">
+            <input type="checkbox" name="unassigned" value="true" class="form-check-input" id="unassigned"
+                   th:checked="${unassigned}"/>
+            <label class="form-check-label" for="unassigned">Chưa phân công</label>
+        </div>
+        <div class="col-auto">
+            <button type="submit" class="btn btn-primary">Lọc</button>
+        </div>
+    </form>
+
+    <div class="table-responsive">
+        <table class="table table-bordered table-hover align-middle">
+            <thead class="table-light">
+            <tr>
+                <th>ID</th>
+                <th>Shop</th>
+                <th>Khách</th>
+                <th>Tổng</th>
+                <th>Trạng thái</th>
+                <th>Shipper</th>
+                <th>Ngày tạo</th>
+                <th th:if="${canAssign}">Phân công</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="o : ${orders}">
+                <td th:text="${o.id}"></td>
+                <td th:text="${o.shop != null ? o.shop.name : '-'}"></td>
+                <td th:text="${o.user != null ? o.user.email : '-'}"></td>
+                <td th:text="${#numbers.formatDecimal(o.total, 0, 'COMMA', 0, 'POINT')} + ' đ'"></td>
+                <td>
+                    <span class="badge bg-secondary" th:text="${o.status.label}"></span>
+                </td>
+                <td th:text="${o.shipper != null ? o.shipper.email : 'Chưa có'}"></td>
+                <td th:text="${#temporals.format(o.createdAt, 'dd/MM/yyyy HH:mm')}"></td>
+                <td th:if="${canAssign}">
+                    <form th:if="${o.status.name() == 'READY_TO_SHIP' and o.shipper == null}"
+                          th:action="@{/admin/orders/{id}/assign(id=${o.id})}" method="post" class="d-flex gap-1">
+                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                        <select name="shipperId" class="form-select form-select-sm" required>
+                            <option value="">Chọn shipper</option>
+                            <option th:each="s : ${shippers}" th:value="${s.id}"
+                                    th:text="${s.email + ' (đang giữ ' + (workload != null and workload[s.id] != null ? workload[s.id] : 0) + ' đơn)'}"></option>
+                        </select>
+                        <button type="submit" class="btn btn-sm btn-success">Giao</button>
+                    </form>
+                    <span th:if="${o.shipper != null}" class="text-muted small">Đã phân công</span>
+                    <span th:if="${o.status.name() != 'READY_TO_SHIP' and o.shipper == null}" class="text-muted small">Chờ sẵn sàng</span>
+                </td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(orders)}">
+                <td colspan="8" class="text-center text-muted">Không có đơn hàng</td>
+            </tr>
+            </tbody>
+        </table>
     </div>
-    <div class="col-md-2">
-        <button type="submit" class="btn btn-danger w-100"><i class="bi bi-funnel"></i> Lọc</button>
-    </div>
-</form>
 
-<p class="text-muted">Có <strong th:text="${orders.totalElements}"></strong> đơn.
-    Chỉ phân công được shipper cho đơn <strong>Đã xác nhận</strong>.</p>
-
-<div class="table-responsive">
-    <table class="table table-hover align-middle bg-white">
-        <thead class="table-light">
-        <tr>
-            <th>Mã đơn</th>
-            <th>Shop</th>
-            <th>Khách</th>
-            <th>Địa chỉ giao</th>
-            <th>Tổng tiền</th>
-            <th>Trạng thái</th>
-            <th>Shipper</th>
-            <th style="width:280px">Phân công</th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr th:if="${orders.empty}">
-            <td colspan="8" class="text-center text-muted py-4">Không có đơn nào.</td>
-        </tr>
-        <tr th:each="order : ${orders.content}">
-            <td th:text="'#' + ${order.id}"></td>
-            <td th:text="${order.shop.name}"></td>
-            <td th:text="${order.user.fullName}"></td>
-            <td th:text="${order.addressSnapshot}"></td>
-            <td th:text="${#numbers.formatDecimal(order.total,0,'POINT',0,'COMMA')} + ' đ'"></td>
-            <td><span class="badge bg-secondary" th:text="${order.status.label}"></span></td>
-            <td th:text="${order.shipper != null} ? ${order.shipper.email} : '—'"></td>
-            <td>
-                <form th:if="${order.status.name() == 'CONFIRMED'}"
-                      th:action="@{/admin/orders/{id}/assign(id=${order.id})}" method="post" class="d-flex gap-1">
-                    <input type="hidden" name="status" th:value="${status}">
-                    <input type="hidden" name="page" th:value="${orders.number}">
-                    <select name="shipperId" class="form-select form-select-sm" required>
-                        <option value="">-- Chọn shipper --</option>
-                        <option th:each="s : ${shippers}" th:value="${s.id}" th:text="${s.email}"
-                                th:selected="${order.shipper != null and order.shipper.id == s.id}"></option>
-                    </select>
-                    <button type="submit" class="btn btn-sm btn-outline-danger"
-                            th:text="${order.shipper == null} ? 'Phân công' : 'Đổi'"></button>
-                </form>
-                <span th:unless="${order.status.name() == 'CONFIRMED'}" class="text-muted">—</span>
-            </td>
-        </tr>
-        </tbody>
-    </table>
+    <!-- Phân trang đơn giản -->
+    <nav th:if="${totalPages != null and totalPages > 1}" class="mt-3">
+        <ul class="pagination">
+            <li class="page-item" th:classappend="${page == 0} ? 'disabled'">
+                <a class="page-link" th:href="@{/admin/orders(page=${page - 1}, status=${status}, unassigned=${unassigned})}">Trước</a>
+            </li>
+            <li class="page-item" th:each="i : ${#numbers.sequence(0, totalPages - 1)}"
+                th:classappend="${i == page} ? 'active'">
+                <a class="page-link" th:href="@{/admin/orders(page=${i}, status=${status}, unassigned=${unassigned})}"
+                   th:text="${i + 1}"></a>
+            </li>
+            <li class="page-item" th:classappend="${page >= totalPages - 1} ? 'disabled'">
+                <a class="page-link" th:href="@{/admin/orders(page=${page + 1}, status=${status}, unassigned=${unassigned})}">Sau</a>
+            </li>
+        </ul>
+    </nav>
 </div>
-
-<nav th:if="${orders.totalPages > 1}">
-    <ul class="pagination">
-        <li class="page-item" th:classappend="${orders.first} ? 'disabled'">
-            <a class="page-link" th:href="@{/admin/orders(status=${status},page=${orders.number - 1})}">Trước</a>
-        </li>
-        <li class="page-item" th:each="p : ${#numbers.sequence(0, orders.totalPages - 1)}"
-            th:classappend="${p == orders.number} ? 'active'">
-            <a class="page-link" th:text="${p + 1}" th:href="@{/admin/orders(status=${status},page=${p})}"></a>
-        </li>
-        <li class="page-item" th:classappend="${orders.last} ? 'disabled'">
-            <a class="page-link" th:href="@{/admin/orders(status=${status},page=${orders.number + 1})}">Sau</a>
-        </li>
-    </ul>
-</nav>
 </body>
 </html>

@@ -5,7 +5,7 @@ import com.oneshop.common.OrderStatus;
 
 public enum OrderTab {
     NEW("Mới", List.of(OrderStatus.NEW)),
-    CONFIRMED("Đã xác nhận", List.of(OrderStatus.CONFIRMED)),
+    CONFIRMED("Đã xác nhận", List.of(OrderStatus.CONFIRMED, OrderStatus.READY_TO_SHIP)),
     SHIPPING("Đang giao", List.of(OrderStatus.PICKED_UP, OrderStatus.SHIPPING)),
     DELIVERED("Đã giao", List.of(OrderStatus.DELIVERED)),
     CANCELLED("Đã hủy", List.of(OrderStatus.CANCELLED)),

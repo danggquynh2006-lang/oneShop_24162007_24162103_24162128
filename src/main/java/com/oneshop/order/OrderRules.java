@@ -14,7 +14,8 @@ public final class OrderRules {
 
     static {
         NEXT.put(NEW, EnumSet.of(CONFIRMED, CANCELLED));
-        NEXT.put(CONFIRMED, EnumSet.of(PICKED_UP));
+        NEXT.put(CONFIRMED, EnumSet.of(READY_TO_SHIP, CANCELLED));
+        NEXT.put(READY_TO_SHIP, EnumSet.of(PICKED_UP));
         NEXT.put(PICKED_UP, EnumSet.of(SHIPPING));
         NEXT.put(SHIPPING, EnumSet.of(DELIVERED));
         NEXT.put(DELIVERED, EnumSet.of(RETURN_REQUESTED));
