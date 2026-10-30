@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Đặt hàng thành công - OneShop</title>
+</head>
+<body>
+    <div class="container my-5 text-center">
+        <h3 class="text-success mb-3">Đặt hàng thành công</h3>
+        <p>Mã thanh toán: <strong th:text="${result.groupCode}"></strong></p>
+        <p>Tổng thanh toán:
+            <strong class="text-danger"
+                    th:text="${#numbers.formatInteger(result.total, 0, 'POINT')} + ' đ'"></strong>
+        </p>
+        <p class="mb-1">Các đơn đã tạo (mỗi shop một đơn):</p>
+        <ul class="list-unstyled">
+            <li class="mb-2" th:each="o : ${result.orders}">
+                Đơn hàng #<span th:text="${o.id}"></span> -
+                <span th:text="${o.shopName}"></span> -
+                <strong th:text="${#numbers.formatInteger(o.total, 0, 'POINT')} + ' đ'"></strong>
+                <a th:if="${result.method.name() == 'VNPAY'}"
+                   th:href="@{/payment/vnpay/create(orderId=${o.id})}"
+                   class="btn btn-sm btn-danger ms-2">Thanh toán VNPAY</a>
+            </li>
+        </ul>
+        <p class="text-muted small" th:if="${result.method.name() == 'VNPAY'}">
+            Mỗi đơn thanh toán riêng, liên kết thanh toán có hiệu lực 15 phút.
+            Nếu hết hạn, bạn có thể thanh toán lại trong mục Đơn mua của tôi.
+        </p>
+        <a th:href="@{/user/orders}" class="btn btn-danger me-2">Xem đơn của tôi</a>
+        <a th:href="@{/}" class="btn btn-outline-secondary">Tiếp tục mua sắm</a>
+    </div>
+</body>
+</html>

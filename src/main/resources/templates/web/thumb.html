@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<div th:fragment="thumb(url, name)">
+    <img th:if="${url != null}" th:src="${url}" th:alt="${name}" class="card-img-top"
+         style="height:180px; object-fit:cover;">
+    <div th:if="${url == null}"
+         class="bg-light text-muted d-flex align-items-center justify-content-center"
+         style="height:180px;">Chưa có ảnh</div>
+</div>
+</body>
+</html>

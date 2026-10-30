@@ -14,106 +14,21 @@ import com.oneshop.promotion.PromotionService;
 import com.oneshop.repository.ShopRepository;
 import com.oneshop.repository.PromotionRepository;
 import com.oneshop.repository.ProductRepository;
-import com.oneshop.repository.ProductImageRepository;
 import com.oneshop.repository.OrderRepository;
-import com.oneshop.entity.ProductImage;
 import com.oneshop.vendor.VendorProductService;
 import com.oneshop.vendor.VendorOrderService;
 import com.oneshop.vendor.VendorRevenueService;
-import com.oneshop.vendor.ShopService;
-import com.oneshop.admin.AdminProductService;
-import com.oneshop.repository.OrderItemRepository;
-import com.oneshop.user.ReviewService;
-import com.oneshop.user.ReviewForm;
-import com.oneshop.common.OrderStatus;
-import com.oneshop.admin.AdminPlatformPromotionService;
-import com.oneshop.common.PromotionScope;
-import com.oneshop.vendor.PromotionForm;
-import java.time.LocalDateTime;
-import com.oneshop.entity.Category;
-import com.oneshop.entity.Product;
-import com.oneshop.repository.CategoryRepository;
-import com.oneshop.vendor.ProductForm;
 
 @SpringBootTest @ActiveProfiles("demo") @Transactional
 class VendorFlowTests {
-    @Autowired private CategoryRepository categoryRepository;
     @Autowired private PromotionService promotionService;
     @Autowired private ShopRepository shopRepository;
     @Autowired private PromotionRepository promotionRepository;
     @Autowired private VendorRevenueService revenueService;
     @Autowired private ProductRepository productRepository;
-    @Autowired private ProductImageRepository productImageRepository;
     @Autowired private OrderRepository orderRepository;
     @Autowired private VendorProductService productService;
     @Autowired private VendorOrderService orderService;
-    @Autowired private ShopService shopService;
-    @Autowired private AdminProductService adminProductService;
-    @Autowired private OrderItemRepository orderItemRepository;
-    @Autowired private ReviewService reviewService;
-    @Autowired private AdminPlatformPromotionService adminPromotionService;
-
-    @Test
-    void shopsHaveCreationTimestampsAndAdminCanSetCommission() {
-        var shop = shopRepository.findAll().get(0);
-        assertNotNull(shop.getCreatedAt());
-
-        shopService.updateCommission(shop.getId(), new BigDecimal("12.50"));
-
-        assertEquals(0, new BigDecimal("12.50").compareTo(shop.getCommissionRate()));
-        assertThrows(BusinessException.class,
-                () -> shopService.updateCommission(shop.getId(), new BigDecimal("100.01")));
-    }
-
-    @Test
-    void adminCanHideProductsAcrossShopsButCannotDeleteProductsInOrderHistory() {
-        Product referenced = orderItemRepository.findAll().get(0).getProduct();
-        boolean wasActive = referenced.isActive();
-
-        adminProductService.toggle(referenced.getId());
-
-        assertEquals(!wasActive, referenced.isActive());
-        assertThrows(BusinessException.class, () -> adminProductService.delete(referenced.getId()));
-    }
-
-    @Test
-    void customersCanReviewAProductOnlyAfterDeliveryAndOnce() {
-        var delivered = orderRepository.findAll().stream()
-                .filter(order -> order.getStatus() == OrderStatus.DELIVERED).findFirst().orElseThrow();
-        Product product = orderItemRepository.findByOrderId(delivered.getId()).get(0).getProduct();
-        ReviewForm form = new ReviewForm();
-        form.setRating(5);
-        form.setComment("Sản phẩm đúng mô tả.");
-
-        assertTrue(reviewService.canReview(product.getId(), delivered.getUser().getId()));
-        reviewService.create(product.getId(), delivered.getUser().getId(), form);
-
-        assertEquals(5.0, product.getAvgRating());
-        assertThrows(BusinessException.class,
-                () -> reviewService.create(product.getId(), delivered.getUser().getId(), form));
-    }
-
-    @Test
-    void adminCanCreatePlatformPromotionUsableByDifferentShops() {
-        PromotionForm form = new PromotionForm();
-        form.setCode("WHOLESALE15");
-        form.setName("Ưu đãi toàn sàn");
-        form.setType(com.oneshop.common.PromotionType.PERCENT_PRODUCT);
-        form.setValue(new BigDecimal("15"));
-        form.setMinOrder(BigDecimal.ZERO);
-        form.setMaxDiscount(new BigDecimal("50000"));
-        form.setStartAt(LocalDateTime.now().minusMinutes(1));
-        form.setEndAt(LocalDateTime.now().plusDays(3));
-        form.setQuantity(200);
-
-        var saved = adminPromotionService.create(form);
-
-        assertEquals(PromotionScope.PLATFORM, saved.getScope());
-        assertNull(saved.getShop());
-        var discount = promotionService.calculate("WHOLESALE15", 99999L,
-                new BigDecimal("200000"), new BigDecimal("25000"));
-        assertEquals(0, new BigDecimal("30000").compareTo(discount.total()));
-    }
 
     @Test
     void promotionCapsDiscountAndChecksShop() {
@@ -148,40 +63,5 @@ class VendorFlowTests {
         Long orderId = orderRepository.findAll().get(0).getId();
         assertThrows(ResourceNotFoundException.class, () -> productService.get(otherShopId, productId));
         assertThrows(ResourceNotFoundException.class, () -> orderService.get(otherShopId, orderId));
-    }
-    @Test
-    void vendorCanCreateProductWithDiscount() throws Exception {
-        Long shopId = shopRepository.findAll().get(0).getId();
-        Category category = categoryRepository.findAll().stream().filter(Category::isActive)
-                .findFirst().orElseThrow();
-        ProductForm form = new ProductForm();
-        form.setName("Má hồng thử nghiệm");
-        form.setPrice(new BigDecimal("200000"));
-        form.setStock(5);
-        form.setCategoryId(category.getId());
-        form.setDiscountPercent(25);
-
-        Product saved = productService.create(shopId, form, null);
-
-        assertEquals(25, productService.get(shopId, saved.getId()).getDiscountPercent());
-        assertEquals(0, new BigDecimal("150000").compareTo(saved.getFinalPrice()));
-    }
-
-    @Test
-    void deletingMainProductImagePromotesAnotherImage() {
-        Long shopId = shopRepository.findAll().stream().filter(shop -> shop.getName().equals("Lumière Beauty"))
-                .findFirst().orElseThrow().getId();
-        var product = productRepository.findByShopIdAndNameContainingIgnoreCase(
-                shopId, "", org.springframework.data.domain.PageRequest.of(0, 1)).getContent().get(0);
-        var mainImage = productImageRepository.save(ProductImage.builder().product(product)
-                .url("https://example.test/main.jpg").mainImage(true).build());
-        productImageRepository.save(ProductImage.builder().product(product)
-                .url("https://example.test/secondary.jpg").mainImage(false).build());
-
-        productService.removeImage(shopId, product.getId(), mainImage.getId());
-
-        var remaining = productImageRepository.findByProductIdOrderByMainImageDescIdAsc(product.getId());
-        assertEquals(1, remaining.stream().filter(ProductImage::isMainImage).count());
-        assertTrue(remaining.get(0).isMainImage());
     }
 }

@@ -32,6 +32,8 @@ public class SecurityConfig {
             // logout chỉ xóa cookie nên không có rủi ro đáng kể.
             .csrf(csrf -> csrf
                 .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
+                // Không đổi CSRF token ở mỗi request (JWT stateless không có "phiên đăng nhập" để đổi).
+                .sessionAuthenticationStrategy((authentication, request, response) -> { })
                 .ignoringRequestMatchers("/api/**", "/logout"))
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/admin/**", "/manager/**").hasAnyRole("ADMIN", "MANAGER")
