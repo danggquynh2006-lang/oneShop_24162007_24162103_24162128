@@ -1,6 +1,8 @@
 package com.oneshop.admin;
 
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -19,20 +21,35 @@ import com.oneshop.repository.UserRepository;
 
 import lombok.RequiredArgsConstructor;
 
-/** Admin/Manager xem đơn của mọi shop và phân công shipper cho đơn đã xác nhận. */
+/**
+ * Admin/Manager xem đơn của mọi shop.
+ * Chỉ Manager được gọi assignShipper (đã khóa bằng @PreAuthorize ở Controller).
+ */
 @Service
 @RequiredArgsConstructor
 public class AdminOrderService {
 
     private static final int PAGE_SIZE = 10;
 
+    /** Các trạng thái coi là "đang giữ" của shipper. */
+    private static final List<OrderStatus> HOLDING = List.of(
+            OrderStatus.READY_TO_SHIP, OrderStatus.PICKED_UP, OrderStatus.SHIPPING);
+
     private final OrderRepository orderRepository;
     private final UserRepository userRepository;
 
+    /**
+     * @param status      lọc theo trạng thái (null = tất cả)
+     * @param unassigned  true = chỉ lấy đơn READY_TO_SHIP chưa có shipper
+     */
     @Transactional(readOnly = true)
-    public Page<Order> search(OrderStatus status, int page) {
+    public Page<Order> search(OrderStatus status, boolean unassigned, int page) {
         PageRequest pageable = PageRequest.of(Math.max(page, 0), PAGE_SIZE, Sort.by(Sort.Direction.DESC, "id"));
-        return status == null ? orderRepository.findAllBy(pageable) : orderRepository.findByStatus(status, pageable);
+        if (unassigned) {
+            return orderRepository.findByStatusAndShipperIsNull(OrderStatus.READY_TO_SHIP, pageable);
+        }
+        return status == null ? orderRepository.findAllBy(pageable)
+                              : orderRepository.findByStatus(status, pageable);
     }
 
     @Transactional(readOnly = true)
@@ -40,19 +57,35 @@ public class AdminOrderService {
         return userRepository.findByRoleAndEnabledTrueAndLockedFalseOrderByEmailAsc(Role.SHIPPER);
     }
 
-    /** Chỉ phân công (hoặc đổi shipper) khi đơn đã được shop xác nhận và shipper chưa lấy hàng. */
+    /** Map shipperId → số đơn đang giữ (READY_TO_SHIP + PICKED_UP + SHIPPING). */
+    @Transactional(readOnly = true)
+    public Map<Long, Long> shipperWorkload() {
+        return shippers().stream().collect(Collectors.toMap(
+                User::getId,
+                s -> orderRepository.countByShipperIdAndStatusIn(s.getId(), HOLDING)
+        ));
+    }
+
+    /**
+     * Chỉ phân công khi đơn đã READY_TO_SHIP (Vendor đã báo sẵn sàng giao).
+     * Cho phép đổi shipper nếu vẫn còn READY_TO_SHIP.
+     */
     @Transactional
     public void assignShipper(Long orderId, Long shipperId) {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy đơn hàng."));
-        if (order.getStatus() != OrderStatus.CONFIRMED) {
-            throw new BusinessException("Chỉ phân công shipper cho đơn đã xác nhận và chưa lấy hàng.");
+
+        if (order.getStatus() != OrderStatus.READY_TO_SHIP) {
+            throw new BusinessException("Chỉ phân công shipper cho đơn đã sẵn sàng giao.");
         }
+
         User shipper = userRepository.findById(shipperId)
                 .orElseThrow(() -> new BusinessException("Không tìm thấy shipper."));
+
         if (shipper.getRole() != Role.SHIPPER || !shipper.isEnabled() || shipper.isLocked()) {
             throw new BusinessException("Tài khoản này không phải shipper đang hoạt động.");
         }
+
         order.setShipper(shipper);
     }
 }

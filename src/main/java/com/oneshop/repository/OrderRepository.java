@@ -30,6 +30,10 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     @EntityGraph(attributePaths = {"user", "shop", "shipper"})
     Page<Order> findByStatus(OrderStatus status, Pageable pageable);
 
+    /** Đơn sẵn sàng giao nhưng chưa phân công shipper. */
+    @EntityGraph(attributePaths = {"user", "shop", "shipper"})
+    Page<Order> findByStatusAndShipperIsNull(OrderStatus status, Pageable pageable);
+
     /** Shipper: chỉ đơn được phân công cho mình. */
     @EntityGraph(attributePaths = {"user", "shop"})
     Page<Order> findByShipperId(Long shipperId, Pageable pageable);
@@ -41,6 +45,9 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     Optional<Order> findByIdAndShipperId(Long id, Long shipperId);
 
     long countByShipperIdAndStatus(Long shipperId, OrderStatus status);
+
+    /** Số đơn đang giữ của shipper (chưa giao xong). */
+    long countByShipperIdAndStatusIn(Long shipperId, List<OrderStatus> statuses);
 
     List<Order> findByShipperIdAndStatusAndDeliveredAtBetween(Long shipperId, OrderStatus status,
                                                                LocalDateTime from, LocalDateTime to);

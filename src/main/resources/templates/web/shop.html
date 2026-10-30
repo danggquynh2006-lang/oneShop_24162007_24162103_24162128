@@ -1,32 +1,86 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<head><title th:text="${shop.name} + ' - OneShop'">Shop - OneShop</title></head>
+<head>
+    <meta charset="UTF-8"/>
+    <title th:text="${shop != null ? shop.name : 'Shop'}">Shop</title>
+    <link rel="stylesheet" th:href="@{/css/oneshop.css}"/>
+</head>
 <body>
-<main class="container py-4">
-    <img th:if="${shop.banner != null and !shop.banner.isBlank()}" th:src="${shop.banner}" class="w-100 rounded mb-4" style="max-height:300px;object-fit:cover" alt="Banner shop">
-    <div class="d-flex align-items-center gap-3 mb-4">
-        <img th:if="${shop.logo != null and !shop.logo.isBlank()}" th:src="${shop.logo}" style="width:72px;height:72px;object-fit:cover" class="rounded-circle" alt="Logo shop">
-        <div><h2 th:text="${shop.name}"></h2><p class="text-muted mb-0" th:text="${shop.description}"></p></div>
-    </div>
-    <h4>Sản phẩm nổi bật</h4>
-    <p th:if="${products.empty}" class="text-muted">Shop chưa có sản phẩm đang bán.</p>
-    <div class="row g-3">
-        <div class="col-6 col-md-3" th:each="product : ${products.content}">
-            <article class="card h-100">
-                <a th:href="@{/product/{id}(id=${product.id})}" class="d-flex justify-content-center align-items-center p-2" style="height:210px">
-                    <img th:if="${imageUrls[product.id] != null}" th:src="${imageUrls[product.id]}" th:alt="${product.name}" style="max-width:100%;max-height:100%;object-fit:contain" loading="lazy" referrerpolicy="no-referrer">
-                    <div th:if="${imageUrls[product.id] == null}" class="bg-light text-muted d-flex align-items-center justify-content-center w-100 h-100">Chưa có ảnh</div>
-                </a>
-                <div class="card-body">
-                    <h5 class="h6"><a class="text-decoration-none" th:href="@{/product/{id}(id=${product.id})}" th:text="${product.name}"></a></h5>
-                    <div><span th:replace="~{fragments/price :: price(${product})}"></span></div>
+<div class="container py-4">
+
+    <!-- Thông tin shop -->
+    <div class="card mb-4" th:if="${shop != null}">
+        <div class="row g-0">
+            <div class="col-md-3 text-center p-3">
+                <img th:if="${shop.logo != null and !#strings.isEmpty(shop.logo)}"
+                     th:src="${shop.logo}" alt="Logo" class="img-fluid rounded" style="max-height:120px"/>
+                <div th:if="${shop.logo == null or #strings.isEmpty(shop.logo)}"
+                     class="bg-light rounded d-flex align-items-center justify-content-center" style="height:120px">
+                    <span class="text-muted">No logo</span>
                 </div>
-            </article>
+            </div>
+            <div class="col-md-9">
+                <div class="card-body">
+                    <h3 class="card-title" th:text="${shop.name}">Tên shop</h3>
+                    <p class="card-text text-muted" th:text="${shop.description}">Mô tả</p>
+                    <p class="mb-0"><strong>Địa chỉ:</strong> <span th:text="${shop.address}">-</span></p>
+                </div>
+            </div>
+        </div>
+        <img th:if="${shop.banner != null and !#strings.isEmpty(shop.banner)}"
+             th:src="${shop.banner}" class="card-img-bottom" alt="Banner" style="max-height:200px; object-fit:cover"/>
+    </div>
+
+    <h4 class="mb-3">Sản phẩm của shop</h4>
+
+    <div class="row row-cols-2 row-cols-md-4 g-3">
+        <div class="col" th:each="product : ${products}">
+            <div class="card h-100 product-card">
+                <a th:href="@{/products/{id}(id=${product.id})}" class="text-decoration-none text-dark">
+                    <!-- Ảnh sản phẩm – null-safe -->
+                    <img th:if="${imageUrls != null and imageUrls[product.id] != null}"
+                         th:src="${imageUrls[product.id]}"
+                         class="card-img-top"
+                         th:alt="${product.name}"
+                         style="height:180px; object-fit:cover"/>
+
+                    <div th:if="${imageUrls == null or imageUrls[product.id] == null}"
+                         class="bg-light d-flex align-items-center justify-content-center"
+                         style="height:180px">
+                        <span class="text-muted small">Không có ảnh</span>
+                    </div>
+
+                    <div class="card-body">
+                        <h6 class="card-title text-truncate" th:text="${product.name}">Tên SP</h6>
+                        <p class="card-text text-danger fw-bold mb-1"
+                           th:text="${#numbers.formatDecimal(product.price, 0, 'COMMA', 0, 'POINT')} + ' đ'">0 đ</p>
+                        <small class="text-muted"
+                               th:text="'Đã bán: ' + ${product.sold != null ? product.sold : 0}"></small>
+                    </div>
+                </a>
+            </div>
         </div>
     </div>
-    <nav th:if="${products.totalPages > 1}" class="d-flex gap-2 mt-3" aria-label="Phân trang sản phẩm shop">
-        <a th:each="page : ${#numbers.sequence(0,products.totalPages - 1)}" th:href="@{/shops/{id}(id=${shop.id},page=${page})}" th:text="${page + 1}" class="btn btn-sm btn-outline-secondary"></a>
+
+    <div th:if="${#lists.isEmpty(products)}" class="text-center text-muted py-5">
+        Shop chưa có sản phẩm nào.
+    </div>
+
+    <!-- Phân trang nếu có -->
+    <nav th:if="${totalPages != null and totalPages > 1}" class="mt-4">
+        <ul class="pagination justify-content-center">
+            <li class="page-item" th:classappend="${currentPage == 0} ? 'disabled'">
+                <a class="page-link" th:href="@{/shops/{id}(id=${shop.id}, page=${currentPage - 1})}">Trước</a>
+            </li>
+            <li class="page-item" th:each="i : ${#numbers.sequence(0, totalPages - 1)}"
+                th:classappend="${i == currentPage} ? 'active'">
+                <a class="page-link" th:href="@{/shops/{id}(id=${shop.id}, page=${i})}" th:text="${i + 1}"></a>
+            </li>
+            <li class="page-item" th:classappend="${currentPage >= totalPages - 1} ? 'disabled'">
+                <a class="page-link" th:href="@{/shops/{id}(id=${shop.id}, page=${currentPage + 1})}">Sau</a>
+            </li>
+        </ul>
     </nav>
-</main>
+</div>
 </body>
 </html>

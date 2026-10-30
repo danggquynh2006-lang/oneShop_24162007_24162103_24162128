@@ -3,6 +3,7 @@ package com.oneshop.common;
 public enum OrderStatus {
     NEW("Đơn mới"),
     CONFIRMED("Đã xác nhận"),
+    READY_TO_SHIP("Sẵn sàng giao"),
     PICKED_UP("Đã lấy hàng"),
     SHIPPING("Đang giao"),
     DELIVERED("Đã giao"),

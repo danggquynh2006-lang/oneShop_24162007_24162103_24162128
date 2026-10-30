@@ -12,12 +12,17 @@ import com.oneshop.payment.VnpayRefundService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 
-@Controller @RequestMapping("/vendor/orders") @RequiredArgsConstructor
+@Controller
+@RequestMapping("/vendor/orders")
+@RequiredArgsConstructor
 public class VendorOrderController {
     private final VendorOrderService orderService;
     private final ShopService shopService;
     private final VnpayRefundService refundService;
-    private Long shopId() { return shopService.requireActiveShop(SecurityUtil.getCurrentUser()).getId(); }
+
+    private Long shopId() {
+        return shopService.requireActiveShop(SecurityUtil.getCurrentUser()).getId();
+    }
 
     @GetMapping
     public String list(@RequestParam(required = false) OrderStatus status,
@@ -37,6 +42,7 @@ public class VendorOrderController {
         model.addAttribute("returnRequest", orderService.returnRequest(id));
         return "vendor/order-detail";
     }
+
     @GetMapping("/{id}/slip")
     public String slip(@PathVariable Long id, Model model, RedirectAttributes redirect) {
         Order order = orderService.get(shopId(), id);
@@ -52,37 +58,63 @@ public class VendorOrderController {
 
     @PostMapping("/{id}/confirm")
     public String confirm(@PathVariable Long id, RedirectAttributes redirect) {
-        try { orderService.confirm(shopId(), id); }
-        catch (BusinessException exception) { redirect.addAttribute("error", exception.getMessage()); }
+        try {
+            orderService.confirm(shopId(), id);
+        } catch (BusinessException exception) {
+            redirect.addAttribute("error", exception.getMessage());
+        }
+        return "redirect:/vendor/orders/" + id;
+    }
+
+    /** Vendor báo sẵn sàng giao (CONFIRMED → READY_TO_SHIP). */
+    @PostMapping("/{id}/ready")
+    public String markReady(@PathVariable Long id, RedirectAttributes redirect) {
+        try {
+            orderService.markReady(shopId(), id);
+        } catch (BusinessException exception) {
+            redirect.addAttribute("error", exception.getMessage());
+        }
         return "redirect:/vendor/orders/" + id;
     }
 
     @PostMapping("/{id}/reject")
     public String reject(@PathVariable Long id, RedirectAttributes redirect) {
-        try { orderService.reject(shopId(), id); }
-        catch (BusinessException exception) { redirect.addAttribute("error", exception.getMessage()); }
+        try {
+            orderService.reject(shopId(), id);
+        } catch (BusinessException exception) {
+            redirect.addAttribute("error", exception.getMessage());
+        }
         return "redirect:/vendor/orders/" + id;
     }
 
     @PostMapping("/{id}/return")
     public String resolveReturn(@PathVariable Long id, @RequestParam boolean accept,
                                 @RequestParam(required = false) String note, RedirectAttributes redirect) {
-        try { orderService.resolveReturn(shopId(), id, accept, note); }
-        catch (BusinessException exception) { redirect.addAttribute("error", exception.getMessage()); }
+        try {
+            orderService.resolveReturn(shopId(), id, accept, note);
+        } catch (BusinessException exception) {
+            redirect.addAttribute("error", exception.getMessage());
+        }
         return "redirect:/vendor/orders/" + id;
     }
 
     @PostMapping("/{id}/refund")
     public String refund(@PathVariable Long id, HttpServletRequest request, RedirectAttributes redirect) {
-        try { refundService.refund(shopId(), id, SecurityUtil.getCurrentUser().getEmail(), request.getRemoteAddr()); }
-        catch (BusinessException exception) { redirect.addAttribute("error", exception.getMessage()); }
+        try {
+            refundService.refund(shopId(), id, SecurityUtil.getCurrentUser().getEmail(), request.getRemoteAddr());
+        } catch (BusinessException exception) {
+            redirect.addAttribute("error", exception.getMessage());
+        }
         return "redirect:/vendor/orders/" + id;
     }
 
     @PostMapping("/{id}/cash-refund")
     public String cashRefund(@PathVariable Long id, RedirectAttributes redirect) {
-        try { orderService.completeCashRefund(shopId(), id); }
-        catch (BusinessException exception) { redirect.addAttribute("error", exception.getMessage()); }
+        try {
+            orderService.completeCashRefund(shopId(), id);
+        } catch (BusinessException exception) {
+            redirect.addAttribute("error", exception.getMessage());
+        }
         return "redirect:/vendor/orders/" + id;
     }
 }

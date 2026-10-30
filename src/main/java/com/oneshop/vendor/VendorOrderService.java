@@ -24,7 +24,8 @@ import com.oneshop.common.ReturnStatus;
 import com.oneshop.entity.ReturnRequest;
 import com.oneshop.repository.ReturnRequestRepository;
 
-@Service @RequiredArgsConstructor
+@Service
+@RequiredArgsConstructor
 public class VendorOrderService {
     private final OrderRepository orderRepository;
     private final OrderItemRepository itemRepository;
@@ -45,16 +46,28 @@ public class VendorOrderService {
     }
 
     @Transactional(readOnly = true)
-    public List<OrderItem> items(Long orderId) { return itemRepository.findByOrderId(orderId); }
+    public List<OrderItem> items(Long orderId) {
+        return itemRepository.findByOrderId(orderId);
+    }
 
     @Transactional(readOnly = true)
-    public Payment payment(Long orderId) { return paymentRepository.findByOrderId(orderId).orElse(null); }
+    public Payment payment(Long orderId) {
+        return paymentRepository.findByOrderId(orderId).orElse(null);
+    }
 
     @Transactional
     public void confirm(Long shopId, Long orderId) {
         Order order = get(shopId, orderId);
         requireStatus(order, OrderStatus.NEW);
         order.setStatus(OrderStatus.CONFIRMED);
+    }
+
+    /** CONFIRMED → READY_TO_SHIP: Vendor báo đã đóng gói, sẵn sàng để shipper đến lấy. */
+    @Transactional
+    public void markReady(Long shopId, Long orderId) {
+        Order order = get(shopId, orderId);
+        requireStatus(order, OrderStatus.CONFIRMED);
+        order.setStatus(OrderStatus.READY_TO_SHIP);
     }
 
     @Transactional
