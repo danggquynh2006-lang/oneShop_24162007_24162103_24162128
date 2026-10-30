@@ -157,15 +157,6 @@
             </div>
         </div>
         <div class="os-footer-bottom">
-            <div class="container py-3">
-                <div class="row">
-                    <div class="col-md-6">&copy; 2026 OneShop. Đồ án môn Lập trình Web.</div>
-                    <div class="col-md-6 text-md-end">
-                        Giao diện dựa trên template Aura, HTML Template by:
-                        <a href="https://templatesjungle.com/" target="_blank" rel="noopener">TemplatesJungle</a>
-                    </div>
-                </div>
-            </div>
         </div>
     </footer>
 <div class="beauty-assistant" data-beauty-assistant>
