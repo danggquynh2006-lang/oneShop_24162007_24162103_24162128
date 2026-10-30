@@ -31,3 +31,12 @@
 | Clarins Double Serum 50ml | `clarins-double-serum-50ml.png` | https://escentual.com/cdn/shop/files/clarins_double_serum_complete_age-defying_concentrate_50ml_3666057202476.png?v=1729190335&width=1920 |
 | Lancôme Advanced Génifique 50ml | `lancome-advanced-genifique-50ml.jpg` | https://www.lancome-usa.com/dw/image/v2/AANG_PRD/on/demandware.static/-/Sites-lancome-us-master-catalog/default/dw6fa42690/pdp/1000302/Advanced-Genifique-Serum_Sales-Claim_1000x1000.jpg?q=70&sfrm=jpg&sh=860&sm=cut&sw=860 |
 | Dior Capture Totale Le Sérum 50ml | `dior-capture-totale-le-serum-50ml.png` | https://image-optimizer-reg.production.sephora-asia.net/images/product_images/1_Product_3348901624022-DIOR-Capture-Totale-Le-Serum-75ml_40df2287a5904bf6780703f6293d69a6a435cecc_1695210128.png |
+| Fresh Soy Face Cleanser 150ml | `fresh-soy-face-cleanser.jpg` | https://static.thcdn.com/productimg/original/13463052-1544920783807030.jpg |
+| Shiseido Anessa Perfect UV Sunscreen | `shiseido-anessa-perfect-uv-sunscreen.jpg` | https://a.cdnsbn.com/images/products/xl/14337681401.jpg |
+| Dior Forever Skin Glow Foundation | `dior-forever-foundation.jpg` | https://storage-dev-pcd.dior.cn/dior/20250317/RdTLEQg8XEh5ata13uweHG.jpg |
+| Lancôme Lash Idôle Mascara | `lancome-lash-idole-mascara.jpg` | https://www.lancome-usa.com/dw/image/v2/AANG_PRD/on/demandware.static/-/Sites-lancome-us-master-catalog/default/dwb62da9ae/LCL_102020_Makeup_LashIdole_FullSizePDP_1000x1000.jpg |
+| Kérastase Nutritive Bain Satin Shampoo | `kerastase-nutritive-bain-satin.png` | https://conceptcshop.com/cdn/shop/files/kerastase-nutritive-shampoing-bain-satin-250-ml-795039.png |
+| Kérastase Première Fondant Conditioner | `kerastase-premiere-conditioner.png` | https://regissalons.co.uk/cdn/shop/files/KER_PREMIERE_2024_PACKSHOT_FONDANT_INTER_3474637196707_1.png |
+| Kérastase Nutritive 8H Magic Night Serum | `kerastase-8h-magic-night-serum.jpg` | https://cdn11.bigcommerce.com/s-a3a53nznqh/images/stencil/original/products/3953/7922/LORE_3474637155025-1__02526.1698989258.jpg |
+| Dior Sauvage Eau de Parfum | `dior-sauvage-eau-de-parfum.png` | https://image-optimizer-reg.production.sephora-asia.net/images/product_images/1_Product_209882-Dior-Sauvage-Eau-De-Parfum-200ml_ab47580b613eb4c255a08e0d39c078781c29b9ed_1555309411.png |
+| Dior J'adore Eau de Parfum | `dior-jadore-eau-de-parfum.jpg` | https://media.ulta.com/i/ulta/2636407_alt01?fmt=auto&h=600&w=600 |

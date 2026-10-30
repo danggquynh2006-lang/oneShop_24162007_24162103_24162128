@@ -19,7 +19,21 @@ mvn '-Dspring-boot.run.profiles=demo' spring-boot:run
 
 Mở `http://localhost:8080/login`. Tài khoản mẫu `vendor@oneshop.com`, `admin@oneshop.com`, `user@oneshop.com`; mật khẩu demo chung `Oneshop@123`. Cơ sở dữ liệu H2 nằm trong bộ nhớ và được tạo lại khi khởi động. Chế độ thường không tự tạo tài khoản demo.
 
-Shop mẫu `/shops/1` có 18 sản phẩm trang điểm high-end: 6 má hồng, 6 son môi và 6 bảng mắt. Thư mục `src/main/resources/static/images/products/` chứa ảnh tĩnh cho 27 sản phẩm demo (18 mỹ phẩm trang điểm và 9 sản phẩm chăm sóc da); `DemoSeeder` dùng đường dẫn `/images/products/...` nên ảnh không còn phụ thuộc CDN bên ngoài khi chạy ứng dụng. Các ảnh được đưa vào Git và sẽ hiển thị cho người clone repository, đồng thời có thể xem trước một số ảnh ngay trên trang này:
+### Trợ lý tư vấn làm đẹp bằng Gemini
+
+Website có nút chat nổi ở góc dưới bên phải. Trợ lý nhận câu hỏi như “Da khô thì nên dùng sản phẩm nào của shop?”, gửi hội thoại tới Gemini từ máy chủ và đưa danh mục sản phẩm đang bán vào hướng dẫn để chỉ gợi ý sản phẩm có thật, kèm shop và giá hiện tại. API key được đọc từ biến môi trường `GEMINI_API_KEY`, không lưu trong JavaScript hay Git. Nếu chưa đặt key, khung chat vẫn hiển thị nhưng trạng thái sẽ báo chưa cấu hình và không giả lập câu trả lời AI.
+
+PowerShell, trước khi khởi động:
+
+```powershell
+$env:GEMINI_API_KEY = "<API key lấy từ Google AI Studio>"
+$env:GEMINI_MODEL = "gemini-3.6-flash"
+mvn '-Dspring-boot.run.profiles=demo' spring-boot:run
+```
+
+Xóa key khỏi phiên PowerShell sau khi dừng ứng dụng bằng `Remove-Item Env:GEMINI_API_KEY`. Model mặc định là `gemini-3.6-flash`. Câu trả lời là gợi ý chăm sóc mỹ phẩm, không phải chẩn đoán hoặc tư vấn điều trị.
+
+Shop mẫu `/shops/1` có sản phẩm thuộc đủ danh mục con: 14 sản phẩm chăm sóc da, 21 sản phẩm trang điểm, 3 sản phẩm chăm sóc tóc và 2 sản phẩm nước hoa. Mỗi sản phẩm demo có ảnh chính; thư mục `src/main/resources/static/images/products/` chứa 36 ảnh sản phẩm được đóng gói cùng mã nguồn. `DemoSeeder` dùng đường dẫn `/images/products/...` nên ảnh không phụ thuộc CDN bên ngoài khi chạy ứng dụng và sẽ hiển thị cho người clone repository. Có thể xem trước một số ảnh ngay trên trang này:
 
 | Danh mục | Sản phẩm minh họa |
 | --- | --- |

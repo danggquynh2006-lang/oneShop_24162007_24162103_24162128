@@ -49,5 +49,20 @@ h1,h2,h3,h4,h5,h6 { font-family: "Playfair Display", Georgia, serif; color: var(
 .product-price { color:var(--os-rose); font-weight:700; }
 .product-card:hover { box-shadow:0 .45rem 1.2rem rgba(110,55,70,.10); }
 .dropdown-menu { border-color:var(--os-line);border-radius:.8rem; }
-footer.os-footer { background:#fae9ed; color:var(--os-ink); }
+footer.os-footer { margin-top:auto; background:#fce7ed; color:var(--os-ink); }
+.os-footer-main { min-height:300px; display:grid; grid-template-columns:1.55fr .72fr 1.05fr 1fr; gap:3rem; align-items:start; padding-top:4rem; padding-bottom:3.5rem; }
+.os-footer-brand .os-brand { display:inline-block; margin-bottom:.65rem; }
+.os-footer-brand p { margin:0 0 1.35rem; font-size:1.08rem; }
+.os-footer-social { display:flex; align-items:center; gap:1.25rem; }
+.os-footer-social a { color:var(--os-ink); font-size:1.4rem; text-decoration:none; }
+.os-footer-social a:hover,.os-footer-column a:hover { color:var(--os-rose); }
+.os-footer-column { display:flex; flex-direction:column; gap:.6rem; }
+.os-footer-column h2 { margin:0 0 .25rem; color:var(--os-rose); font:700 1.12rem "Playfair Display",Georgia,serif; }
+.os-footer-column a,.os-footer-column span { color:var(--os-ink); font-size:1rem; line-height:1.5; text-decoration:none; }
+.os-footer-contact a,.os-footer-contact span { display:flex; align-items:center; gap:.5rem; }
+.os-footer-contact i { width:1.1rem; flex:none; }
+.os-footer-bottom { background:#f4c6d2; }
+.os-footer-bottom-inner { min-height:66px; display:flex; align-items:center; justify-content:space-between; gap:1rem; font-size:.88rem; }
+.os-footer-bottom a { color:inherit; }
+@media(max-width:767.98px) { .os-footer-main { grid-template-columns:1fr 1fr; gap:2rem 1.25rem; padding-top:2.5rem; padding-bottom:2rem; }.os-footer-brand { grid-column:1/-1; }.os-footer-brand p { font-size:.95rem; }.os-footer-column a,.os-footer-column span { font-size:.9rem; }.os-footer-bottom-inner { align-items:flex-start; flex-direction:column; justify-content:center; padding-top:.8rem; padding-bottom:.8rem; font-size:.78rem; } }
 @media(max-width:767.98px) { .home-hero { min-height:165px;padding:1.5rem; }.hero-decoration {display:none}.category-feature-card {padding:.7rem;gap:.55rem;}.category-feature-card small{display:none}.product-image-wrap{height:170px}.os-search{max-width:none}.section-heading h2{font-size:1.2rem} }

@@ -52,8 +52,13 @@ public class DemoSeeder implements CommandLineRunner {
                 Product.builder().shop(shop).category(category).name("Sữa rửa mặt dịu nhẹ")
                         .brand("Lumière").description("Làm sạch nhẹ nhàng mỗi ngày.")
                         .price(new BigDecimal("179000")).stock(42).sold(31).build()));
+        productImages.saveAll(List.of(
+                ProductImage.builder().product(samples.get(0)).url("/images/products/estee-lauder-advanced-night-repair-50ml.png").mainImage(true).build(),
+                ProductImage.builder().product(samples.get(1)).url("/images/products/kiehl-s-ultra-facial-cream-125ml.webp").mainImage(true).build(),
+                ProductImage.builder().product(samples.get(2)).url("/images/products/fresh-soy-face-cleanser.jpg").mainImage(true).build()));
         seedHighEndMakeup(shop);
         seedSkincareProducts(shop);
+        seedRemainingCategories(shop);
         Order order = orders.save(com.oneshop.entity.Order.builder().user(buyer).shop(shop)
                 .addressSnapshot("12 Lê Lợi, Quận 1, TP.HCM").status(OrderStatus.NEW)
                 .subtotal(new BigDecimal("578000")).shippingFee(new BigDecimal("22000"))
@@ -156,6 +161,54 @@ public class DemoSeeder implements CommandLineRunner {
         sample(shop, serum, "Dior Capture Totale Le Sérum 50ml", "Dior",
                 "Tinh chất Capture Totale Le Sérum.", "4900000", 6,
                 "/images/products/dior-capture-totale-le-serum-50ml.png");
+    }
+
+    private void seedRemainingCategories(Shop shop) {
+        Category skincare = categories.findFirstByNameIgnoreCaseAndParentIsNull("Chăm sóc da").orElseThrow();
+        Category cleanser = categories.findFirstByNameIgnoreCaseAndParentId("Sữa rửa mặt", skincare.getId()).orElseThrow();
+        Category sunscreen = categories.findFirstByNameIgnoreCaseAndParentId("Kem chống nắng", skincare.getId()).orElseThrow();
+        sample(shop, cleanser, "Fresh Soy Face Cleanser 150ml", "Fresh",
+                "Sữa rửa mặt dạng gel dịu nhẹ, làm sạch da mà không tạo cảm giác khô căng.", "890000", 16,
+                "/images/products/fresh-soy-face-cleanser.jpg");
+        sample(shop, sunscreen, "Shiseido Anessa Perfect UV Sunscreen SPF50+ 60ml", "Shiseido",
+                "Kem chống nắng Anessa SPF50+ PA++++, kết cấu chống nước.", "1050000", 14,
+                "/images/products/shiseido-anessa-perfect-uv-sunscreen.jpg");
+
+        Category makeup = categories.findFirstByNameIgnoreCaseAndParentIsNull("Trang điểm").orElseThrow();
+        Category foundation = categories.findFirstByNameIgnoreCaseAndParentId("Kem nền", makeup.getId()).orElseThrow();
+        Category eyeshadow = categories.findFirstByNameIgnoreCaseAndParentId("Phấn mắt", makeup.getId()).orElseThrow();
+        Category mascara = categories.findFirstByNameIgnoreCaseAndParentId("Mascara", makeup.getId()).orElseThrow();
+        sample(shop, foundation, "Dior Forever Skin Glow Foundation", "Dior",
+                "Kem nền Dior Forever Skin Glow, tông màu demo 0N.", "1750000", 8,
+                "/images/products/dior-forever-foundation.jpg");
+        sample(shop, eyeshadow, "Dior Backstage Eye Palette 001 Warm Neutrals", "Dior",
+                "Bảng phấn mắt tông màu trung tính dễ phối.", "1750000", 7,
+                "/images/products/dior-backstage-eye-palette-001-warm-neutrals.jpg");
+        sample(shop, mascara, "Lancôme Lash Idôle Mascara 8ml", "Lancôme",
+                "Mascara màu đen với đầu cọ cong giúp chải tơi mi.", "980000", 11,
+                "/images/products/lancome-lash-idole-mascara.jpg");
+
+        Category hair = categories.findFirstByNameIgnoreCaseAndParentIsNull("Chăm sóc tóc").orElseThrow();
+        Category shampoo = categories.findFirstByNameIgnoreCaseAndParentId("Dầu gội", hair.getId()).orElseThrow();
+        Category conditioner = categories.findFirstByNameIgnoreCaseAndParentId("Dầu xả", hair.getId()).orElseThrow();
+        Category hairCare = categories.findFirstByNameIgnoreCaseAndParentId("Dưỡng tóc", hair.getId()).orElseThrow();
+        sample(shop, shampoo, "Kérastase Nutritive Bain Satin Shampoo 250ml", "Kérastase",
+                "Dầu gội dưỡng ẩm dành cho tóc khô.", "890000", 9,
+                "/images/products/kerastase-nutritive-bain-satin.png");
+        sample(shop, conditioner, "Kérastase Première Fondant Conditioner 200ml", "Kérastase",
+                "Dầu xả chăm sóc tóc hư tổn, giúp tóc mềm và dễ chải.", "1150000", 7,
+                "/images/products/kerastase-premiere-conditioner.png");
+        sample(shop, hairCare, "Kérastase Nutritive 8H Magic Night Serum 90ml", "Kérastase",
+                "Tinh chất dưỡng tóc qua đêm cho tóc khô xơ.", "1250000", 6,
+                "/images/products/kerastase-8h-magic-night-serum.jpg");
+
+        Category fragrance = categories.findFirstByNameIgnoreCaseAndParentIsNull("Nước hoa").orElseThrow();
+        sample(shop, fragrance, "Dior Sauvage Eau de Parfum 100ml", "Dior",
+                "Nước hoa nam hương gỗ và cam chanh, bản demo 100ml.", "3850000", 5,
+                "/images/products/dior-sauvage-eau-de-parfum.png");
+        sample(shop, fragrance, "Dior J'adore Eau de Parfum 100ml", "Dior",
+                "Nước hoa nữ hương hoa, bản demo 100ml.", "4200000", 4,
+                "/images/products/dior-jadore-eau-de-parfum.jpg");
     }
 
     private void sample(Shop shop, Category category, String name, String brand, String description,
